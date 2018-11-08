@@ -1,4 +1,7 @@
 #pragma once
+
+#include <glm/glm.hpp>
+
 class Shader
 {
 private:
@@ -7,6 +10,8 @@ private:
 public:
 	Shader (const char* vertexShaderPath, const char* fragmentShaderPath);
 	~Shader ();
+
+	void setUniform (const char* uniform, glm::mat4 matrix);
 
 	void bind ();
 };

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <glm/gtc/type_ptr.hpp>
+
 Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
 {
 	std::ifstream vertexShaderFile (vertexShaderPath);
@@ -36,6 +38,12 @@ Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
 
 	glDeleteShader (vertexShaderId);
 	glDeleteShader (fragmentShaderId);
+}
+
+void Shader::setUniform (const char* uniform, glm::mat4 matrix)
+{
+	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	glUniformMatrix4fv (uniformLocation, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Shader::bind ()
