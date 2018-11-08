@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 class Window
 {
@@ -20,6 +21,8 @@ public:
 	bool shouldClose();
 	void update();
 	GLFWwindow* getWindowHandle () const;
+	void setCursorPosition (glm::vec2 position);
+	glm::vec2 getMidPoint ();
 	~Window ();
 };
 

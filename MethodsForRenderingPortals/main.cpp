@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "VAO.h"
 #include "Input.h"
+#include "Camera.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
 const int INITIAL_WINDOW_HEIGHT = 720;
@@ -16,6 +17,7 @@ Window* window;
 Shader* defaultShader;
 Input* input;
 VAO* vao;
+Camera* camera;
 
 bool running = false;
 
@@ -23,6 +25,8 @@ void tick()
 {
 	if (input->isKeyDown(GLFW_KEY_ESCAPE))
 		running = false;
+
+	camera->tick ();
 }
 
 float t = 0.0;
@@ -34,10 +38,10 @@ void render()
 
 	vao->render();
 
-	glm::mat4 viewMatrix = glm::mat4 (1.0);
-	glm::mat4 modelMatrix = glm::rotate (glm::mat4 (1.0), t += 0.001f, glm::vec3 (0.0, 0.0, 1.0));
-
+	glm::mat4 viewMatrix = camera->getViewMatrix();
 	defaultShader->setUniform ("viewMatrix", viewMatrix);
+
+	glm::mat4 modelMatrix = glm::rotate (glm::mat4 (1.0), t += 0.001f, glm::vec3 (0.0, 0.0, 1.0));
 	defaultShader->setUniform ("modelMatrix", modelMatrix);
 
 	window->update();
@@ -55,7 +59,7 @@ void init()
 
 	defaultShader->bind();
 
-	glm::mat4 projectionMatrix = glm::perspective (35.0f, 1.0f, 0.1f, 100.0f);
+	glm::mat4 projectionMatrix = glm::perspective (45.0f, 1.0f, 0.1f, 100.0f);
 
 	defaultShader->setUniform ("projectionMatrix", projectionMatrix);
 
@@ -72,6 +76,8 @@ void init()
 	vao->compile();
 
 	input = new Input(window);
+
+	camera = new Camera (input, window);
 }
 
 void mainLoop()

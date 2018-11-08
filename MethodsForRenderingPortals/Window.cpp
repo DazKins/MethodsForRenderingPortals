@@ -53,6 +53,16 @@ bool Window::shouldClose()
 	return glfwWindowShouldClose(this->windowHandle);
 }
 
+void Window::setCursorPosition (glm::vec2 position)
+{
+	glfwSetCursorPos (this->windowHandle, position.x, position.y);
+}
+
+glm::vec2 Window::getMidPoint ()
+{
+	return glm::vec2 (this->width / 2.0, this->height / 2.0);
+}
+
 void Window::update()
 {
 	glfwSwapBuffers(this->windowHandle);
