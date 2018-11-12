@@ -58,6 +58,11 @@ void Window::setCursorPosition (glm::vec2 position)
 	glfwSetCursorPos (this->windowHandle, position.x, position.y);
 }
 
+void Window::hideCursor ()
+{
+	glfwSetInputMode (this->windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 glm::vec2 Window::getMidPoint ()
 {
 	return glm::vec2 (this->width / 2.0, this->height / 2.0);

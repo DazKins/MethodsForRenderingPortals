@@ -10,9 +10,11 @@ private:
 	float x;
 	float y;
 	float z;
+	float u;
+	float v;
 
 	unsigned int vertexCount;
-	std::vector<float> vertexPositionData;
+	std::vector<float> vertexData;
 
 	unsigned int indexCount;
 	std::vector<unsigned int> indexData;
@@ -25,6 +27,10 @@ public:
 	VAO* setY (float y);
 	VAO* setZ (float z);
 	VAO* setXYZ (float x, float y, float z);
+
+	VAO* setU (float u);
+	VAO* setV (float v);
+	VAO* setUV (float u, float v);
 
 	int pushVertex ();
 

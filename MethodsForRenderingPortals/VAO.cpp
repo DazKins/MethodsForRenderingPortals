@@ -37,15 +37,35 @@ VAO* VAO::setXYZ(float x, float y, float z)
 {
 	this->setX(x);
 	this->setY(y);
-	this->setZ(z);
+	return this->setZ(z);
+}
+
+VAO* VAO::setU (float u)
+{
+	this->u = u;
 	return this;
+}
+
+VAO* VAO::setV (float v)
+{
+	this->v = v;
+	return this;
+}
+
+VAO* VAO::setUV (float u, float v)
+{
+	this->setU (u);
+	return this->setV (v);
 }
 
 int VAO::pushVertex()
 {
-	this->vertexPositionData.push_back(this->x);
-	this->vertexPositionData.push_back(this->y);
-	this->vertexPositionData.push_back(this->z);
+	this->vertexData.push_back (this->x);
+	this->vertexData.push_back (this->y);
+	this->vertexData.push_back (this->z);
+
+	this->vertexData.push_back (this->u);
+	this->vertexData.push_back (this->v); 
 
 	this->vertexCount++;
 
@@ -68,15 +88,18 @@ void VAO::compile()
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, this->vertexCount * 3 * sizeof(float), &this->vertexPositionData[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->vertexCount * 5 * sizeof(float), &this->vertexData[0], GL_STATIC_DRAW);
 
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indexCount * sizeof(unsigned int), &this->indexData[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray (0);
+
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray (1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 

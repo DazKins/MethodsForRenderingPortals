@@ -1,48 +1,34 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "Window.h"
-#include "Shader.h"
-#include "VAO.h"
 #include "Input.h"
-#include "Camera.h"
+#include "Game.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
 const int INITIAL_WINDOW_HEIGHT = 720;
 
-Window* window;
-Shader* defaultShader;
-Input* input;
-VAO* vao;
-Camera* camera;
-
 bool running = false;
+
+Window* window;
+Input* input;
+Game* game;
 
 void tick()
 {
 	if (input->isKeyDown(GLFW_KEY_ESCAPE))
 		running = false;
 
-	camera->tick ();
+	game->tick ();
 }
-
-float t = 0.0;
 
 void render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	vao->render();
-
-	glm::mat4 viewMatrix = camera->getViewMatrix();
-	defaultShader->setUniform ("viewMatrix", viewMatrix);
-
-	glm::mat4 modelMatrix = glm::rotate (glm::mat4 (1.0), t += 0.001f, glm::vec3 (0.0, 0.0, 1.0));
-	defaultShader->setUniform ("modelMatrix", modelMatrix);
+	game->render ();
 
 	window->update();
 }
@@ -55,29 +41,11 @@ void init()
 
 	window->create();
 
-	defaultShader = new Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-
-	defaultShader->bind();
-
-	glm::mat4 projectionMatrix = glm::perspective (45.0f, 1.0f, 0.1f, 100.0f);
-
-	defaultShader->setUniform ("projectionMatrix", projectionMatrix);
-
-	vao = new VAO();
-
-	int topRight = vao->setXYZ(0.5f, 0.5f, -0.5f)->pushVertex();
-	int bottomRight = vao->setXYZ(0.5f, -0.5f, -0.5f)->pushVertex();
-	int bottomLeft = vao->setXYZ(-0.5f, -0.5f, -0.5f)->pushVertex();
-	int topLeft = vao->setXYZ(-0.5f, 0.5f, -0.5f)->pushVertex();
-
-	vao->pushIndex(topRight)->pushIndex(bottomRight)->pushIndex(topLeft);
-	vao->pushIndex(bottomRight)->pushIndex(bottomLeft)->pushIndex(topLeft);
-
-	vao->compile();
-
 	input = new Input(window);
 
-	camera = new Camera (input, window);
+	game = new Game (input, window);
+
+	window->hideCursor ();
 }
 
 void mainLoop()

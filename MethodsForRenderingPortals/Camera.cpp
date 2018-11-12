@@ -36,6 +36,11 @@ void Camera::tick ()
 	if (this->input->isKeyDown (GLFW_KEY_D))
 		this->position += glm::vec3 (movementSpeed * cosY, 0, -movementSpeed * sinY);
 
+	if (this->input->isKeyDown (GLFW_KEY_SPACE))
+		this->position += glm::vec3 (0.0f, movementSpeed, 0.0f);
+	if (this->input->isKeyDown (GLFW_KEY_LEFT_CONTROL))
+		this->position += glm::vec3 (0.0f, -movementSpeed, 0.0f);
+
 	window->setCursorPosition(window->getMidPoint());
 }
 
