@@ -16,6 +16,9 @@ public:
 	Camera (Input *input, Window *window);
 	~Camera ();
 
+	void setPosition (glm::vec3 position);
+	void setRotation (glm::vec2 rotation);
+
 	glm::mat4 getViewMatrix ();
 
 	void tick ();

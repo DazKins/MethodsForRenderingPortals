@@ -2,14 +2,14 @@
 
 #include <glm/ext/matrix_clip_space.hpp>
 
-#include "VAO.h"
 #include "Camera.h"
-#include "Texture.h"
 #include "Shader.h"
 #include "Level.h"
+#include "Player.h"
 
 Level* level;
 Camera* camera;
+Player* player;
 
 Game::Game (Input *input, Window* window)
 {
@@ -21,6 +21,8 @@ Game::Game (Input *input, Window* window)
 	camera = new Camera (input, window);
 
 	level = new Level (5.0f, 1.0f, 5.0f);
+
+	player = new Player (input, window, camera);
 }
 
 Game::~Game () { }
@@ -35,5 +37,5 @@ void Game::render ()
 
 void Game::tick ()
 {
-	camera->tick ();
+	player->tick ();
 }
