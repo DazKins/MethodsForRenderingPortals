@@ -68,6 +68,11 @@ glm::vec2 Window::getMidPoint ()
 	return glm::vec2 (this->width / 2.0, this->height / 2.0);
 }
 
+float Window::getAspectRatio ()
+{
+	return (float) this->width / this->height;
+}
+
 void Window::update()
 {
 	glfwSwapBuffers(this->windowHandle);

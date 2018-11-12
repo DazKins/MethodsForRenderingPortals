@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "Input.h"
 #include "Game.h"
+#include "Shader.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
 const int INITIAL_WINDOW_HEIGHT = 720;
@@ -26,7 +27,7 @@ void tick()
 void render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	game->render ();
 
@@ -41,7 +42,11 @@ void init()
 
 	window->create();
 
+	glEnable (GL_DEPTH_TEST);
+
 	input = new Input(window);
+
+	Shader::initShaders ();
 
 	game = new Game (input, window);
 

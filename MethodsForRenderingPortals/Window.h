@@ -24,6 +24,7 @@ public:
 	void setCursorPosition (glm::vec2 position);
 	void hideCursor ();
 	glm::vec2 getMidPoint ();
+	float getAspectRatio ();
 	~Window ();
 };
 

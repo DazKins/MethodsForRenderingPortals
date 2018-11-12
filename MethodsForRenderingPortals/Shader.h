@@ -14,5 +14,7 @@ public:
 	void setUniform (const char* uniform, glm::mat4 matrix);
 
 	void bind ();
-};
 
+	static Shader* DEFAULT_SHADER;
+	static void initShaders ();
+};

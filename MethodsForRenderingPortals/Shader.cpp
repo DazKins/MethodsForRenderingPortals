@@ -40,6 +40,19 @@ Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
 	glDeleteShader (fragmentShaderId);
 }
 
+Shader* Shader::DEFAULT_SHADER;
+
+void Shader::initShaders ()
+{
+	Shader::DEFAULT_SHADER = new Shader ("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
+
+	glm::mat4 id = glm::mat4 (1.0f);
+
+	Shader::DEFAULT_SHADER->setUniform ("projectionMatrix", id);
+	Shader::DEFAULT_SHADER->setUniform ("viewMatrix", id);
+	Shader::DEFAULT_SHADER->setUniform ("modelMatrix", id);
+}
+
 void Shader::setUniform (const char* uniform, glm::mat4 matrix)
 {
 	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
