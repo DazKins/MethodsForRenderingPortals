@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Window.h"
-#include "Input.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "Level.h"
-#include "Player.h"
+#include "Implementation.h"
 
-class Game
+class ImplementationStencilBuffer : public Implementation
 {
 public:
-	Game (Input* input, Window* window);
-	~Game ();
+	ImplementationStencilBuffer (Input* input, Window* window);
+	~ImplementationStencilBuffer ();
 
 	void render ();
 	void tick ();
@@ -20,9 +18,6 @@ public:
 
 private:
 	Level * level;
-	Camera* camera;
-	Player* player;
-	Input* input;
 
 	glm::vec3 portal1Position;
 	glm::vec3 portal1Normal;

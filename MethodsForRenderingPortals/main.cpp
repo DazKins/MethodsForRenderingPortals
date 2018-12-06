@@ -4,7 +4,7 @@
 
 #include "Window.h"
 #include "Input.h"
-#include "Game.h"
+#include "ImplementationStencilBuffer.h"
 #include "Shader.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
@@ -14,41 +14,41 @@ bool running = false;
 
 Window* window;
 Input* input;
-Game* game;
+Implementation* implementation;
 
 void tick()
 {
 	if (input->isKeyDown(GLFW_KEY_ESCAPE))
 		running = false;
 
-	game->tick ();
+	implementation->tick ();
 }
 
 void render()
 {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClearColor (0.2f, 0.3f, 0.3f, 1.0f);
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	game->render ();
+	implementation->render ();
 
-	window->update();
+	window->update ();
 }
 
 void init()
 {
-	glfwInit();
+	glfwInit ();
 
-	window = new Window(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+	window = new Window (INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
-	window->create();
+	window->create ();
 
 	glEnable (GL_DEPTH_TEST);
 
-	input = new Input(window);
+	input = new Input (window);
 
 	Shader::initShaders ();
 
-	game = new Game (input, window);
+	implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
 
 	window->hideCursor ();
 }
@@ -57,8 +57,8 @@ void mainLoop()
 {
 	while (running)
 	{
-		tick();
-		render();
+		tick ();
+		render ();
 
 		if (window->shouldClose())
 			running = false;
@@ -67,13 +67,13 @@ void mainLoop()
 
 int main ()
 {
-	init();
+	init ();
 
 	running = true;
 
-	mainLoop();
+	mainLoop ();
 
-	glfwTerminate();
+	glfwTerminate ();
 
 	return 0;
 }

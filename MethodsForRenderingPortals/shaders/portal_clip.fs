@@ -16,5 +16,4 @@ void main()
 		discard;
 
 	FragColor =	texture(textureSampler, fragmentTextureCoord);
-	//FragColor = vec4(portalNormal, 1.0f);
 }
