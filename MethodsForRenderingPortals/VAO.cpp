@@ -40,6 +40,13 @@ VAO* VAO::setXYZ(float x, float y, float z)
 	return this->setZ(z);
 }
 
+VAO* VAO::setXYZ (glm::vec3 xyz)
+{
+	this->setX (xyz.x);
+	this->setY (xyz.y);
+	return this->setZ (xyz.z);
+}
+
 VAO* VAO::setU (float u)
 {
 	this->u = u;

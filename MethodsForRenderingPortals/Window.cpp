@@ -46,6 +46,8 @@ bool Window::create ()
 	if (!this->initializeGlad ()) return false;
 
 	glViewport (0, 0, this->width, this->height);
+
+	glfwSwapInterval (1);
 }
 
 bool Window::shouldClose()

@@ -10,7 +10,8 @@ Player::Player (Input* input, Window* window, Camera* camera)
 Player::~Player () { }
 
 float rotationSpeed = 0.002f;
-float movementSpeed = 0.005f;
+//float movementSpeed = 0.005f
+float movementSpeed = 0.025f;
 
 void Player::tick ()
 {

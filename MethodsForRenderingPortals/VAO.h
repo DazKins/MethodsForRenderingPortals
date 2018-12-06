@@ -1,6 +1,7 @@
 #pragma once
 
 #include<vector>
+#include <glm/glm.hpp>
 
 class VAO
 {
@@ -27,6 +28,7 @@ public:
 	VAO* setY (float y);
 	VAO* setZ (float z);
 	VAO* setXYZ (float x, float y, float z);
+	VAO* setXYZ (glm::vec3 xyz);
 
 	VAO* setU (float u);
 	VAO* setV (float v);

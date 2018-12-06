@@ -5,9 +5,8 @@
 #include <iostream>
 #include <math.h>
 
-Camera::Camera (Input* input, Window* window)
+Camera::Camera (Window* window)
 {
-	this->input = input;
 	this->window = window;
 }
 
@@ -34,4 +33,9 @@ void Camera::setPosition (glm::vec3 position)
 void Camera::setRotation (glm::vec2 rotation)
 {
 	this->rotation = rotation;
+}
+
+glm::vec3 Camera::getPosition()
+{
+	return this->position;
 }

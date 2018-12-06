@@ -9,15 +9,16 @@ class Camera
 private:
 	glm::vec3 position;
 	glm::vec2 rotation;
-	Input *input;
 	Window *window;
 
 public:
-	Camera (Input *input, Window *window);
+	Camera (Window *window);
 	~Camera ();
 
 	void setPosition (glm::vec3 position);
 	void setRotation (glm::vec2 rotation);
+
+	glm::vec3 getPosition (); 
 
 	glm::mat4 getViewMatrix ();
 

@@ -6,16 +6,14 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
+Shader::Shader (std::string shaderPath)
 {
-	std::ifstream vertexShaderFile (vertexShaderPath);
-	std::string vertexShaderSource ((std::istreambuf_iterator<char> (vertexShaderFile)),
-		(std::istreambuf_iterator<char> ()));
+	std::ifstream vertexShaderFile (shaderPath + ".vs");
+	std::string vertexShaderSource ((std::istreambuf_iterator<char> (vertexShaderFile)), (std::istreambuf_iterator<char> ()));
 	const char* vertexShaderSourceCStr = vertexShaderSource.c_str ();
 
-	std::ifstream fragmentShaderFile (fragmentShaderPath);
-	std::string fragmentShaderSource ((std::istreambuf_iterator<char> (fragmentShaderFile)),
-		(std::istreambuf_iterator<char> ()));
+	std::ifstream fragmentShaderFile (shaderPath + ".fs");
+	std::string fragmentShaderSource ((std::istreambuf_iterator<char> (fragmentShaderFile)), (std::istreambuf_iterator<char> ()));
 	const char* fragmentShaderSourceCStr = fragmentShaderSource.c_str ();
 
 	unsigned int vertexShaderId;
@@ -23,10 +21,26 @@ Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
 	glShaderSource (vertexShaderId, 1, &vertexShaderSourceCStr, NULL);
 	glCompileShader (vertexShaderId);
 
+	char infoLog[512];
+	int success = 0;
+	glGetShaderiv (vertexShaderId, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog (vertexShaderId, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED, " << shaderPath << std::endl << infoLog << std::endl;
+	};
+
 	unsigned int fragmentShaderId;
 	fragmentShaderId = glCreateShader (GL_FRAGMENT_SHADER);
 	glShaderSource (fragmentShaderId, 1, &fragmentShaderSourceCStr, NULL);
 	glCompileShader (fragmentShaderId);
+
+	glGetShaderiv (fragmentShaderId, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog (fragmentShaderId, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, " << shaderPath << std::endl << infoLog << std::endl;
+	};
 
 	this->shaderProgramId = glCreateProgram ();
 
@@ -40,23 +54,63 @@ Shader::Shader (const char* vertexShaderPath, const char* fragmentShaderPath)
 	glDeleteShader (fragmentShaderId);
 }
 
-Shader* Shader::DEFAULT_SHADER;
+std::vector<Shader*> Shader::ALL_SHADERS;
+
+Shader* Shader::DEFAULT;
+Shader* Shader::PORTAL_CLIP;
 
 void Shader::initShaders ()
 {
-	Shader::DEFAULT_SHADER = new Shader ("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
+	Shader::DEFAULT = new Shader ("shaders/default");
+	ALL_SHADERS.push_back (Shader::DEFAULT);
+
+	Shader::PORTAL_CLIP = new Shader ("shaders/portal_clip");
+	ALL_SHADERS.push_back (Shader::PORTAL_CLIP);
 
 	glm::mat4 id = glm::mat4 (1.0f);
+	updateAllProjectionMatrices (id);
+	updateAllViewMatrices (id);
+	updateAllModelMatrices (id);
+}
 
-	Shader::DEFAULT_SHADER->setUniform ("projectionMatrix", id);
-	Shader::DEFAULT_SHADER->setUniform ("viewMatrix", id);
-	Shader::DEFAULT_SHADER->setUniform ("modelMatrix", id);
+void Shader::updateAllProjectionMatrices (glm::mat4 matrix)
+{
+	for (Shader* s : Shader::ALL_SHADERS)
+	{
+		s->setUniform ("projectionMatrix", matrix);
+	}
+}
+
+void Shader::updateAllViewMatrices (glm::mat4 matrix)
+{
+	for (Shader* s : Shader::ALL_SHADERS)
+	{
+		s->setUniform ("viewMatrix", matrix);
+	}
+}
+
+void Shader::updateAllModelMatrices (glm::mat4 matrix)
+{
+	for (Shader* s : Shader::ALL_SHADERS)
+	{
+		s->setUniform ("modelMatrix", matrix);
+	}
 }
 
 void Shader::setUniform (const char* uniform, glm::mat4 matrix)
 {
+	this->bind ();
+
 	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
 	glUniformMatrix4fv (uniformLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Shader::setUniform (const char* uniform, glm::vec3 vector)
+{
+	this->bind ();
+
+	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	glUniform3fv (uniformLocation, 1, glm::value_ptr(vector));
 }
 
 void Shader::bind ()
