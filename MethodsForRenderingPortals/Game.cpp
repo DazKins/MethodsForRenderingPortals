@@ -21,7 +21,7 @@ Game::Game (Input *input, Window* window)
 
 	this->player = new Player (input, window, camera);
 
-	float epsilon = 0.5f;
+	float epsilon = 0.005f;
 
 	this->portal1Position = glm::vec3(0.0f, 0.0f, -(2.5f - epsilon));
 	//this->portal1Normal = portal1Normal;
@@ -74,6 +74,10 @@ void Game::renderFromPerspective(Camera* cam)
 	glEnable(GL_STENCIL_TEST);
 	glClear(GL_STENCIL_BUFFER_BIT);
 
+	glStencilFunc (GL_ALWAYS, 0, 0xFF);
+	Shader::DEFAULT->bind ();
+	level->render ();
+
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -84,11 +88,7 @@ void Game::renderFromPerspective(Camera* cam)
 	Shader::DEFAULT->bind ();
 	this->portal2->render ();
 
-	glStencilFunc(GL_EQUAL, 0, 0xFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-	Shader::DEFAULT->bind ();
-	level->render();
 
 	// PORTAL 1
 
