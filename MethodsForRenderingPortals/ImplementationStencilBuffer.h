@@ -2,7 +2,6 @@
 
 #include "Camera.h"
 #include "Shader.h"
-#include "Level.h"
 #include "Implementation.h"
 
 class ImplementationStencilBuffer : public Implementation
@@ -17,8 +16,6 @@ public:
 	void renderFromPerspective (Camera* cam);
 
 private:
-	Level * level;
-
 	glm::vec3 portal1Position;
 	glm::vec3 portal1Normal;
 

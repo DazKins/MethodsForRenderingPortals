@@ -21,6 +21,11 @@ glm::mat4 Camera::getViewMatrix ()
 	return glm::translate (rotateY, -this->position);
 }
 
+glm::mat4 Camera::getTranslationMatrix ()
+{
+	return glm::translate (glm::mat4 (1.0), -this->position);
+}
+
 Camera::~Camera ()
 {
 }

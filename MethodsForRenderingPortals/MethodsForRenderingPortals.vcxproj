@@ -129,6 +129,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Implementation.cpp" />
+    <ClCompile Include="ImplementationFramebufferObjects.cpp" />
     <ClCompile Include="ImplementationStencilBuffer.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Level.cpp" />
@@ -143,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Implementation.h" />
+    <ClInclude Include="ImplementationFramebufferObjects.h" />
     <ClInclude Include="ImplementationStencilBuffer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Level.h" />

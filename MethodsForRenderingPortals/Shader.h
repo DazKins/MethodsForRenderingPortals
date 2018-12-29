@@ -11,6 +11,10 @@ private:
 
 	static std::vector<Shader*> ALL_SHADERS;
 
+	static glm::mat4 currentModelMatrix;
+	static glm::mat4 currentViewMatrix;
+	static glm::mat4 currentProjectionMatrix;
+
 public:
 	Shader (std::string shaderPath);
 	~Shader ();
@@ -27,4 +31,8 @@ public:
 	static void updateAllProjectionMatrices (glm::mat4 matrix);
 	static void updateAllViewMatrices (glm::mat4 matrix);
 	static void updateAllModelMatrices (glm::mat4 matrix);
+
+	static glm::mat4 getCurrentModelMatrix ();
+	static glm::mat4 getCurrentViewMatrix ();
+	static glm::mat4 getCurrentProjectionMatrix ();
 };

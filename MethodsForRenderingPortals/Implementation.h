@@ -4,6 +4,7 @@
 #include "Window.h"
 #include "Camera.h"
 #include "Player.h"
+#include "Level.h"
 
 class Implementation
 {
@@ -15,9 +16,11 @@ public:
 	virtual void render ();
 
 protected:
+	Level * level;
 	Input* input;
 	Window* window;
 	Camera* camera;
 	Player* player;
-};
 
+	static float PORTAL_SIZE;
+};

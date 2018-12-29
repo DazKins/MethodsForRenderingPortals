@@ -54,6 +54,10 @@ Shader::Shader (std::string shaderPath)
 	glDeleteShader (fragmentShaderId);
 }
 
+glm::mat4 Shader::currentViewMatrix;
+glm::mat4 Shader::currentModelMatrix;
+glm::mat4 Shader::currentProjectionMatrix;
+
 std::vector<Shader*> Shader::ALL_SHADERS;
 
 Shader* Shader::DEFAULT;
@@ -79,6 +83,8 @@ void Shader::updateAllProjectionMatrices (glm::mat4 matrix)
 	{
 		s->setUniform ("projectionMatrix", matrix);
 	}
+
+	Shader::currentProjectionMatrix = matrix;
 }
 
 void Shader::updateAllViewMatrices (glm::mat4 matrix)
@@ -87,6 +93,8 @@ void Shader::updateAllViewMatrices (glm::mat4 matrix)
 	{
 		s->setUniform ("viewMatrix", matrix);
 	}
+
+	Shader::currentViewMatrix = matrix;
 }
 
 void Shader::updateAllModelMatrices (glm::mat4 matrix)
@@ -95,6 +103,8 @@ void Shader::updateAllModelMatrices (glm::mat4 matrix)
 	{
 		s->setUniform ("modelMatrix", matrix);
 	}
+
+	Shader::currentModelMatrix = matrix;
 }
 
 void Shader::setUniform (const char* uniform, glm::mat4 matrix)
@@ -111,6 +121,21 @@ void Shader::setUniform (const char* uniform, glm::vec3 vector)
 
 	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
 	glUniform3fv (uniformLocation, 1, glm::value_ptr(vector));
+}
+
+glm::mat4 Shader::getCurrentModelMatrix ()
+{
+	return Shader::currentModelMatrix;
+}
+
+glm::mat4 Shader::getCurrentViewMatrix ()
+{
+	return Shader::currentViewMatrix;
+}
+
+glm::mat4 Shader::getCurrentProjectionMatrix ()
+{
+	return Shader::currentProjectionMatrix;
 }
 
 void Shader::bind ()

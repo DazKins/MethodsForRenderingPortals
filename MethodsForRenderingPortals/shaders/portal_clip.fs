@@ -12,7 +12,7 @@ uniform vec3 portalNormal;
 
 void main()
 {
-	if (dot(position - portalPosition, portalNormal) <= 0)
+	if (dot(position - portalPosition, portalNormal) < 0)
 		discard;
 
 	FragColor =	texture(textureSampler, fragmentTextureCoord);

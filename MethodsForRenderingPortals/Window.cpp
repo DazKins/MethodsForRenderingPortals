@@ -45,8 +45,6 @@ bool Window::create ()
 
 	if (!this->initializeGlad ()) return false;
 
-	glViewport (0, 0, this->width, this->height);
-
 	glfwSwapInterval (1);
 }
 
@@ -73,6 +71,16 @@ glm::vec2 Window::getMidPoint ()
 float Window::getAspectRatio ()
 {
 	return (float) this->width / this->height;
+}
+
+unsigned int Window::getWidth ()
+{
+	return this->width;
+}
+
+unsigned int Window::getHeight ()
+{
+	return this->height;
 }
 
 void Window::update()
