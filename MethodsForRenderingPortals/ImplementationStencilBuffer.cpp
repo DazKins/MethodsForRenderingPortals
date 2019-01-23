@@ -2,7 +2,7 @@
 
 ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window* window) : Implementation (input, window)
 {
-	float epsilon = 0.005f;
+	float epsilon = 0.0005f;
 
 	this->portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
 	this->portal1Normal = glm::vec3 (0.0f, 0.0f, 1.0f);
@@ -55,18 +55,20 @@ void ImplementationStencilBuffer::renderFromPerspective (Camera* cam)
 	glEnable (GL_STENCIL_TEST);
 	glClear (GL_STENCIL_BUFFER_BIT);
 
-	glStencilFunc (GL_ALWAYS, 0, 0xFF);
+	glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
+
+	glStencilFunc (GL_EQUAL, 0, 0xFF);
 	Shader::DEFAULT->bind ();
 	level->render ();
 
 	glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	glStencilFunc (GL_ALWAYS, 1, 0xFF);
-	Shader::DEFAULT->bind ();
+	Shader::PORTAL_STENCIL_BUFFER->bind ();
 	this->portal1->render ();
 
 	glStencilFunc (GL_ALWAYS, 2, 0xFF);
-	Shader::DEFAULT->bind ();
+	Shader::PORTAL_STENCIL_BUFFER->bind ();
 	this->portal2->render ();
 
 	glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);

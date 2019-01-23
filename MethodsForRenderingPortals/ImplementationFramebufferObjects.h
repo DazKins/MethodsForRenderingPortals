@@ -23,6 +23,8 @@ private:
 	VAO* portal1;
 	VAO* portal2;
 
+	VAO* bunny;
+
 	glm::vec3 portal1Vertices[4];
 	glm::vec3 portal2Vertices[4];
 

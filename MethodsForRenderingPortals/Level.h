@@ -17,5 +17,7 @@ private:
 
 	Texture* wallTexture;
 	Texture* floorTexture;
+
+	VAO* bunny;
 };
 

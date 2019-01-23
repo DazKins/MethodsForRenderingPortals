@@ -21,11 +21,14 @@ public:
 
 	void setUniform (const char* uniform, glm::mat4 matrix);
 	void setUniform (const char* uniform, glm::vec3 vector);
+	void setUniform (const char* uniform, glm::vec4 vector);
+	void setUniform (const char* uniform, bool boolean);
 
 	void bind ();
 
 	static Shader* DEFAULT;
 	static Shader* PORTAL_CLIP;
+	static Shader* PORTAL_STENCIL_BUFFER;
 	static void initShaders ();
 
 	static void updateAllProjectionMatrices (glm::mat4 matrix);

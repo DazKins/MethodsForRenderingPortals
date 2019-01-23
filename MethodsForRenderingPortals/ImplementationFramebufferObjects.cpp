@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "Shader.h"
+#include "ModelLoader.h"
 
 ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window) : Implementation (input, window)
 {
@@ -20,7 +21,7 @@ ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input
 	this->portal2FrameBuffer = std::get<0> (portal2);
 	this->portal2Texture = std::get<1> (portal2);
 
-	float epsilon = 0.005f;
+	float epsilon = 0.0005f;
 
 	this->portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
 	this->portal1Normal = glm::vec3 (0.0f, 0.0f, 1.0f);

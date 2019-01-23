@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Shader.h"
+#include "ModelLoader.h"
 
 Level::Level (float xSize, float ySize, float zSize)
 {
@@ -58,6 +59,8 @@ Level::Level (float xSize, float ySize, float zSize)
 
 	this->wallTexture = new Texture ("textures/wall.jpg");
 	this->floorTexture = new Texture ("textures/floor.jpg");
+
+	bunny = loadObj ("models/bunny");
 }
 
 Level::~Level () { }
@@ -69,4 +72,6 @@ void Level::render ()
 
 	this->floorTexture->bind ();
 	this->floorVAO->render ();
+
+	this->bunny->render ();
 }

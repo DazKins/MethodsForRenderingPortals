@@ -6,19 +6,36 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+std::string loadMainVertexShaderSource ()
+{
+	std::ifstream vertexShaderFile ("shaders/main.vs");
+	std::string vertexShaderSource ((std::istreambuf_iterator<char> (vertexShaderFile)), (std::istreambuf_iterator<char> ()));
+	return vertexShaderSource;
+}
+
+std::string loadMainFragmentShaderSource ()
+{
+	std::ifstream fragmentShaderFile ("shaders/main.fs");
+	std::string fragmentShaderSource ((std::istreambuf_iterator<char> (fragmentShaderFile)), (std::istreambuf_iterator<char> ()));
+	return fragmentShaderSource;
+}
+
 Shader::Shader (std::string shaderPath)
 {
+	std::string mainVertexShaderSource = loadMainVertexShaderSource ();
+	std::string mainFragmentShaderSource = loadMainFragmentShaderSource ();
+
 	std::ifstream vertexShaderFile (shaderPath + ".vs");
 	std::string vertexShaderSource ((std::istreambuf_iterator<char> (vertexShaderFile)), (std::istreambuf_iterator<char> ()));
-	const char* vertexShaderSourceCStr = vertexShaderSource.c_str ();
 
 	std::ifstream fragmentShaderFile (shaderPath + ".fs");
 	std::string fragmentShaderSource ((std::istreambuf_iterator<char> (fragmentShaderFile)), (std::istreambuf_iterator<char> ()));
-	const char* fragmentShaderSourceCStr = fragmentShaderSource.c_str ();
 
 	unsigned int vertexShaderId;
 	vertexShaderId = glCreateShader (GL_VERTEX_SHADER);
-	glShaderSource (vertexShaderId, 1, &vertexShaderSourceCStr, NULL);
+	const char* vertexShaderInput[2] = { mainVertexShaderSource.c_str (), vertexShaderSource.c_str() };
+	int vertexShaderLengths[2] = { mainVertexShaderSource.length (), vertexShaderSource.length () };
+	glShaderSource (vertexShaderId, 2, vertexShaderInput, vertexShaderLengths);
 	glCompileShader (vertexShaderId);
 
 	char infoLog[512];
@@ -32,7 +49,9 @@ Shader::Shader (std::string shaderPath)
 
 	unsigned int fragmentShaderId;
 	fragmentShaderId = glCreateShader (GL_FRAGMENT_SHADER);
-	glShaderSource (fragmentShaderId, 1, &fragmentShaderSourceCStr, NULL);
+	const char* fragmentShaderInput[2] = { mainFragmentShaderSource.c_str(), fragmentShaderSource.c_str() };
+	int fragmentShaderLengths[2] = { mainFragmentShaderSource.length (), fragmentShaderSource.length () };
+	glShaderSource (fragmentShaderId, 2, fragmentShaderInput, fragmentShaderLengths);
 	glCompileShader (fragmentShaderId);
 
 	glGetShaderiv (fragmentShaderId, GL_COMPILE_STATUS, &success);
@@ -62,6 +81,7 @@ std::vector<Shader*> Shader::ALL_SHADERS;
 
 Shader* Shader::DEFAULT;
 Shader* Shader::PORTAL_CLIP;
+Shader* Shader::PORTAL_STENCIL_BUFFER;
 
 void Shader::initShaders ()
 {
@@ -70,6 +90,9 @@ void Shader::initShaders ()
 
 	Shader::PORTAL_CLIP = new Shader ("shaders/portal_clip");
 	ALL_SHADERS.push_back (Shader::PORTAL_CLIP);
+
+	Shader::PORTAL_STENCIL_BUFFER = new Shader ("shaders/portal_stencil_buffer");
+	ALL_SHADERS.push_back (Shader::PORTAL_STENCIL_BUFFER);
 
 	glm::mat4 id = glm::mat4 (1.0f);
 	updateAllProjectionMatrices (id);
@@ -112,7 +135,7 @@ void Shader::setUniform (const char* uniform, glm::mat4 matrix)
 	this->bind ();
 
 	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
-	glUniformMatrix4fv (uniformLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+	glUniformMatrix4fv (uniformLocation, 1, GL_FALSE, glm::value_ptr (matrix));
 }
 
 void Shader::setUniform (const char* uniform, glm::vec3 vector)
@@ -120,7 +143,23 @@ void Shader::setUniform (const char* uniform, glm::vec3 vector)
 	this->bind ();
 
 	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
-	glUniform3fv (uniformLocation, 1, glm::value_ptr(vector));
+	glUniform3fv (uniformLocation, 1, glm::value_ptr (vector));
+}
+
+void Shader::setUniform (const char* uniform, glm::vec4 vector)
+{
+	this->bind ();
+
+	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	glUniform4fv (uniformLocation, 1, glm::value_ptr (vector));
+}
+
+void Shader::setUniform (const char* uniform, bool boolean)
+{
+	this->bind ();
+
+	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	glUniform1i (uniformLocation, boolean);
 }
 
 glm::mat4 Shader::getCurrentModelMatrix ()

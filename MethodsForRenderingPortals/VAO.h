@@ -11,6 +11,11 @@ private:
 	float x;
 	float y;
 	float z;
+
+	float nx;
+	float ny;
+	float nz;
+
 	float u;
 	float v;
 
@@ -29,6 +34,12 @@ public:
 	VAO* setZ (float z);
 	VAO* setXYZ (float x, float y, float z);
 	VAO* setXYZ (glm::vec3 xyz);
+
+	VAO* setNormalX (float x);
+	VAO* setNormalY (float y);
+	VAO* setNormalZ (float z);
+	VAO* setNormalXYZ (float x, float y, float z);
+	VAO* setNormalXYZ (glm::vec3 xyz);
 
 	VAO* setU (float u);
 	VAO* setV (float v);

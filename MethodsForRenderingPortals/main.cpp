@@ -27,7 +27,9 @@ void tick ()
 
 void render ()
 {
-	glClearColor (0.2f, 0.3f, 0.3f, 1.0f);
+	glm::vec4 clearColor = glm::vec4 (0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor (clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+	Shader::PORTAL_STENCIL_BUFFER->setUniform ("clearColor", clearColor);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	implementation->render ();
@@ -49,8 +51,8 @@ void init ()
 
 	Shader::initShaders ();
 
-	//implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
-	implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
+	implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
+	//implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
 
 	window->hideCursor ();
 }

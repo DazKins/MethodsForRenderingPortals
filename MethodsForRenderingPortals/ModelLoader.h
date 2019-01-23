@@ -6,4 +6,4 @@
 
 #include "VAO.h"
 
-VAO* loadOBJ (std::string path);
+VAO* loadObj (std::string path);

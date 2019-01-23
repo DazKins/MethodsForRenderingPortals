@@ -47,6 +47,38 @@ VAO* VAO::setXYZ (glm::vec3 xyz)
 	return this->setZ (xyz.z);
 }
 
+VAO* VAO::setNormalX (float x)
+{
+	this->nx = x;
+	return this;
+}
+
+VAO* VAO::setNormalY (float y)
+{
+	this->ny = y;
+	return this;
+}
+
+VAO* VAO::setNormalZ (float z)
+{
+	this->nz = z;
+	return this;
+}
+
+VAO* VAO::setNormalXYZ (float x, float y, float z)
+{
+	this->setNormalX (x);
+	this->setNormalY (y);
+	return this->setNormalZ (z);
+}
+
+VAO* VAO::setNormalXYZ (glm::vec3 xyz)
+{
+	this->setNormalX (xyz.x);
+	this->setNormalY (xyz.y);
+	return this->setNormalZ (xyz.z);
+}
+
 VAO* VAO::setU (float u)
 {
 	this->u = u;
@@ -70,6 +102,10 @@ int VAO::pushVertex()
 	this->vertexData.push_back (this->x);
 	this->vertexData.push_back (this->y);
 	this->vertexData.push_back (this->z);
+
+	this->vertexData.push_back (this->nx);
+	this->vertexData.push_back (this->ny);
+	this->vertexData.push_back (this->nz);
 
 	this->vertexData.push_back (this->u);
 	this->vertexData.push_back (this->v); 
@@ -95,18 +131,21 @@ void VAO::compile()
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, this->vertexCount * 5 * sizeof(float), &this->vertexData[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->vertexCount * 8 * sizeof(float), &this->vertexData[0], GL_STATIC_DRAW);
 
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indexCount * sizeof(unsigned int), &this->indexData[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray (0);
 
-	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*) (3 * sizeof (float)));
 	glEnableVertexAttribArray (1);
+
+	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*) (6 * sizeof(float)));
+	glEnableVertexAttribArray (2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
