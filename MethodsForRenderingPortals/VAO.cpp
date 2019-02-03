@@ -3,41 +3,41 @@
 #include <glad/glad.h>
 #include <iostream>
 
-VAO::VAO()
+VAO::VAO ()
 {
-	glGenVertexArrays(1, &this->vaoId);
+	glGenVertexArrays (1, &this->vaoId);
 
 	this->vertexCount = 0;
 }
 
-VAO::~VAO()
+VAO::~VAO ()
 {
 
 }
 
-VAO* VAO::setX(float x)
+VAO* VAO::setX (float x)
 {
 	this->x = x;
 	return this;
 }
 
-VAO* VAO::setY(float y)
+VAO* VAO::setY (float y)
 {
 	this->y = y;
 	return this;
 }
 
-VAO* VAO::setZ(float z)
+VAO* VAO::setZ (float z)
 {
 	this->z = z;
 	return this;
 }
 
-VAO* VAO::setXYZ(float x, float y, float z)
+VAO* VAO::setXYZ (float x, float y, float z)
 {
-	this->setX(x);
-	this->setY(y);
-	return this->setZ(z);
+	this->setX (x);
+	this->setY (y);
+	return this->setZ (z);
 }
 
 VAO* VAO::setXYZ (glm::vec3 xyz)
@@ -97,7 +97,7 @@ VAO* VAO::setUV (float u, float v)
 	return this->setV (v);
 }
 
-int VAO::pushVertex()
+int VAO::pushVertex ()
 {
 	this->vertexData.push_back (this->x);
 	this->vertexData.push_back (this->y);
@@ -108,55 +108,66 @@ int VAO::pushVertex()
 	this->vertexData.push_back (this->nz);
 
 	this->vertexData.push_back (this->u);
-	this->vertexData.push_back (this->v); 
+	this->vertexData.push_back (this->v);
 
 	this->vertexCount++;
 
 	return this->vertexCount - 1;
 }
 
-VAO* VAO::pushIndex(int index)
+VAO* VAO::pushIndex (int index)
 {
-	this->indexData.push_back(index);
+	this->indexData.push_back (index);
 
 	this->indexCount++;
 
 	return this;
 }
 
-void VAO::compile()
+void VAO::compile ()
 {
-	glBindVertexArray(this->vaoId);
+	glBindVertexArray (this->vaoId);
 
 	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, this->vertexCount * 8 * sizeof(float), &this->vertexData[0], GL_STATIC_DRAW);
+	glGenBuffers (1, &VBO);
+	glBindBuffer (GL_ARRAY_BUFFER, VBO);
+	glBufferData (GL_ARRAY_BUFFER, this->vertexCount * 8 * sizeof (float), &this->vertexData[0], GL_STATIC_DRAW);
 
 	unsigned int EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indexCount * sizeof(unsigned int), &this->indexData[0], GL_STATIC_DRAW);
+	glGenBuffers (1, &EBO);
+	glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData (GL_ELEMENT_ARRAY_BUFFER, this->indexCount * sizeof (unsigned int), &this->indexData[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*)0);
 	glEnableVertexAttribArray (0);
 
-	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*) (3 * sizeof (float)));
+	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*)(3 * sizeof (float)));
 	glEnableVertexAttribArray (1);
 
-	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*) (6 * sizeof(float)));
+	glVertexAttribPointer (2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof (float), (void*)(6 * sizeof (float)));
 	glEnableVertexAttribArray (2);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	glBindVertexArray (0);
+
+	this->compiled = true;
 }
 
-void VAO::render()
+bool VAO::isCompiled ()
 {
-	glBindVertexArray(this->vaoId);
+	return this->compiled;
+}
 
-	glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+void VAO::render ()
+{
+	if (!this->compiled)
+		this->compile ();
 
-	glBindVertexArray(0);
+
+	glBindVertexArray (this->vaoId);
+
+	glDrawElements (GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray (0);
 }

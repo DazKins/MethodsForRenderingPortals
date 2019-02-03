@@ -1,36 +1,27 @@
 #include "ImplementationStencilBuffer.h"
 
-ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window* window) : Implementation (input, window)
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+
+ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window) : Implementation (input, window)
 {
 	float epsilon = 0.0005f;
 
-	this->portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
-	this->portal1Normal = glm::vec3 (0.0f, 0.0f, 1.0f);
-	this->portal2Position = glm::vec3 (0.0f, 0.0f, 2.5f - epsilon);
-	this->portal2Normal = glm::vec3 (0.0f, 0.0f, -1.0f);
+	this->portal1 = new Portal ();
+	this->portal2 = new Portal ();
 
-	this->portal1 = new VAO ();
-	this->portal2 = new VAO ();
+	glm::vec3 portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
+	glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
 
-	int v0 = this->portal1->setXYZ (glm::vec3 (-PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal1Position)->pushVertex ();
-	int v1 = this->portal1->setXYZ (glm::vec3 (-PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal1Position)->pushVertex ();
-	int v2 = this->portal1->setXYZ (glm::vec3 (PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal1Position)->pushVertex ();
-	int v3 = this->portal1->setXYZ (glm::vec3 (PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal1Position)->pushVertex ();
+	this->portal1->generatePortalMesh ();
+	this->portal2->generatePortalMesh ();
 
-	this->portal1->pushIndex (v0)->pushIndex (v1)->pushIndex (v2);
-	this->portal1->pushIndex (v2)->pushIndex (v3)->pushIndex (v0);
+	this->portal1->toWorld = glm::translate (glm::mat4 (1.0f), portal1Position);
 
-	this->portal1->compile();
-
-	v0 = this->portal2->setXYZ (glm::vec3 (-PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal2Position)->pushVertex();
-	v1 = this->portal2->setXYZ (glm::vec3 (-PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal2Position)->pushVertex();
-	v2 = this->portal2->setXYZ (glm::vec3 (PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal2Position)->pushVertex();
-	v3 = this->portal2->setXYZ (glm::vec3 (PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal2Position)->pushVertex();
-
-	this->portal2->pushIndex (v0)->pushIndex (v1)->pushIndex (v2);
-	this->portal2->pushIndex (v2)->pushIndex (v3)->pushIndex (v0);
-
-	this->portal2->compile ();
+	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
+		* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 }
 
 ImplementationStencilBuffer::~ImplementationStencilBuffer () { }
@@ -65,25 +56,26 @@ void ImplementationStencilBuffer::renderFromPerspective (Camera* cam)
 
 	glStencilFunc (GL_ALWAYS, 1, 0xFF);
 	Shader::PORTAL_STENCIL_BUFFER->bind ();
-	this->portal1->render ();
+	Shader::updateAllModelMatrices (portal1->toWorld);
+	this->portal1->model->render ();
 
 	glStencilFunc (GL_ALWAYS, 2, 0xFF);
 	Shader::PORTAL_STENCIL_BUFFER->bind ();
-	this->portal2->render ();
+	Shader::updateAllModelMatrices (portal2->toWorld);
+	this->portal2->model->render ();
+
+	Shader::updateAllModelMatrices (glm::mat4 (1.0f));
 
 	glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 
 	// PORTAL 1
-
-	glm::vec3 position = cam->getPosition ();
-	cam->setPosition (position - portal1Position + portal2Position);
-	viewMatrix = cam->getViewMatrix ();
+	viewMatrix = getNewCameraView (cam->getViewMatrix (), portal1, portal2);
 	Shader::updateAllViewMatrices (viewMatrix);
 
-	glStencilFunc(GL_EQUAL, 1, 0xFF);
+	glStencilFunc (GL_EQUAL, 1, 0xFF);
 
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2Position);
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2Normal);
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2->getNormal ());
 	Shader::PORTAL_CLIP->bind ();
 
 	glClear (GL_DEPTH_BUFFER_BIT);
@@ -91,14 +83,13 @@ void ImplementationStencilBuffer::renderFromPerspective (Camera* cam)
 
 	// PORTAL 2
 
-	cam->setPosition (position - portal2Position + portal1Position);
-	viewMatrix = cam->getViewMatrix ();
+	viewMatrix = getNewCameraView (cam->getViewMatrix (), portal2, portal1);
 	Shader::updateAllViewMatrices (viewMatrix);
 
-	glStencilFunc(GL_EQUAL, 2, 0xFF);
+	glStencilFunc (GL_EQUAL, 2, 0xFF);
 
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1Position);
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1Normal);
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1->getNormal ());
 	Shader::PORTAL_CLIP->bind ();
 
 	glClear (GL_DEPTH_BUFFER_BIT);
@@ -106,5 +97,4 @@ void ImplementationStencilBuffer::renderFromPerspective (Camera* cam)
 
 	Shader::DEFAULT->bind ();
 	glDisable (GL_STENCIL_TEST);
-	cam->setPosition (position);
 }

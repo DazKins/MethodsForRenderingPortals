@@ -25,6 +25,8 @@ private:
 	unsigned int indexCount;
 	std::vector<unsigned int> indexData;
 
+	bool compiled = false;
+
 public:
 	VAO ();
 	~VAO ();
@@ -48,6 +50,8 @@ public:
 	int pushVertex ();
 
 	VAO* pushIndex (int index);
+
+	bool isCompiled ();
 
 	void compile ();
 

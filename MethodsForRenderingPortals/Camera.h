@@ -8,7 +8,7 @@ class Camera
 {
 private:
 	glm::vec3 position;
-	glm::vec2 rotation;
+	glm::vec3 rotation;
 	Window *window;
 
 public:
@@ -16,9 +16,10 @@ public:
 	~Camera ();
 
 	void setPosition (glm::vec3 position);
-	void setRotation (glm::vec2 rotation);
+	void setRotation (glm::vec3 rotation);
 
-	glm::vec3 getPosition (); 
+	glm::vec3 getPosition ();
+	glm::vec3 getRotation ();
 
 	glm::mat4 getViewMatrix ();
 	glm::mat4 getTranslationMatrix ();

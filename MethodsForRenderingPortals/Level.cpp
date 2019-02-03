@@ -54,9 +54,6 @@ Level::Level (float xSize, float ySize, float zSize)
 	floorVAO->pushIndex (floorTopRight)->pushIndex (floorBottomRight)->pushIndex (floorTopLeft);
 	floorVAO->pushIndex (floorBottomRight)->pushIndex (floorBottomLeft)->pushIndex (floorTopLeft);
 
-	wallVAO->compile ();
-	floorVAO->compile ();
-
 	this->wallTexture = new Texture ("textures/wall.jpg");
 	this->floorTexture = new Texture ("textures/floor.jpg");
 

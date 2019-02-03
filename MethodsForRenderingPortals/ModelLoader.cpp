@@ -86,7 +86,5 @@ VAO* loadObj (std::string path)
 		}
 	}
 
-	vao->compile ();
-
 	return vao;
 }

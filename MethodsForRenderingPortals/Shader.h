@@ -29,6 +29,7 @@ public:
 	static Shader* DEFAULT;
 	static Shader* PORTAL_CLIP;
 	static Shader* PORTAL_STENCIL_BUFFER;
+	static Shader* PORTAL_FRAMEBUFFER_OBJECT;
 	static void initShaders ();
 
 	static void updateAllProjectionMatrices (glm::mat4 matrix);

@@ -1,7 +1,5 @@
 #version 330 core
 
-out vec4 FragColor;
-
 in vec2 texCoord;
 in vec3 position;
 in vec3 normal;
@@ -15,5 +13,10 @@ float getLighting()
 
 void setLitTexture()
 {
-	FragColor =	texture(textureSampler, texCoord) * getLighting();
+	gl_FragColor =	texture(textureSampler, texCoord) * getLighting();
+}
+
+void setUnlitTexture()
+{
+    gl_FragColor = texture(textureSampler, texCoord);
 }

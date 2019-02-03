@@ -9,7 +9,7 @@ class Player
 {
 private:
 	glm::vec3 position;
-	glm::vec2 rotation;
+	glm::vec3 rotation;
 
 	Input* input;
 	Window* window;

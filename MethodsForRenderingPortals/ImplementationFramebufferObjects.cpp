@@ -23,49 +23,26 @@ ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input
 
 	float epsilon = 0.0005f;
 
-	this->portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
-	this->portal1Normal = glm::vec3 (0.0f, 0.0f, 1.0f);
-	this->portal2Position = glm::vec3 (0.0f, 0.0f, 2.5f - epsilon);
-	this->portal2Normal = glm::vec3 (0.0f, 0.0f, -1.0f);
+	glm::vec3 portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
+	glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
 
-	this->portal1 = new VAO ();
-	this->portal2 = new VAO ();
+	this->portal1 = new Portal ();
+	this->portal1->generatePortalMesh ();
+	this->portal1->model->compile ();
 
-	this->portal1Vertices[0] = glm::vec3 (-PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal1Position;
-	this->portal1Vertices[1] = glm::vec3 (-PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal1Position;
-	this->portal1Vertices[2] = glm::vec3 (PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal1Position;
-	this->portal1Vertices[3] = glm::vec3 (PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal1Position;
+	this->portal1->toWorld = glm::translate (glm::mat4 (1.0f), portal1Position);
 
-	int v0 = this->portal1->setXYZ (portal1Vertices[0])->setUV (0.0f, 0.0f)->pushVertex ();
-	int v1 = this->portal1->setXYZ (portal1Vertices[1])->setUV (0.0f, 1.0f)->pushVertex ();
-	int v2 = this->portal1->setXYZ (portal1Vertices[2])->setUV (1.0f, 1.0f)->pushVertex ();
-	int v3 = this->portal1->setXYZ (portal1Vertices[3])->setUV (1.0f, 0.0f)->pushVertex ();
+	this->portal2 = new Portal ();
+	this->portal2->generatePortalMesh ();
+	this->portal2->model->compile ();
 
-	this->portal1->pushIndex (v0)->pushIndex (v1)->pushIndex (v2);
-	this->portal1->pushIndex (v2)->pushIndex (v3)->pushIndex (v0);
-
-	this->portal1->compile ();
-
-	this->portal2Vertices[0] = glm::vec3 (-PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal2Position;
-	this->portal2Vertices[1] = glm::vec3 (-PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal2Position;
-	this->portal2Vertices[2] = glm::vec3 (PORTAL_SIZE / 2.0f, PORTAL_SIZE / 2.0f, 0.0f) + portal2Position;
-	this->portal2Vertices[3] = glm::vec3 (PORTAL_SIZE / 2.0f, -PORTAL_SIZE / 2.0f, 0.0f) + portal2Position;
-
-	v0 = this->portal2->setXYZ (portal2Vertices[0])->setUV (0.0f, 0.0f)->pushVertex ();
-	v1 = this->portal2->setXYZ (portal2Vertices[1])->setUV (0.0f, 1.0f)->pushVertex ();
-	v2 = this->portal2->setXYZ (portal2Vertices[2])->setUV (1.0f, 1.0f)->pushVertex ();
-	v3 = this->portal2->setXYZ (portal2Vertices[3])->setUV (1.0f, 0.0f)->pushVertex ();
-
-	this->portal2->pushIndex (v0)->pushIndex (v1)->pushIndex (v2);
-	this->portal2->pushIndex (v2)->pushIndex (v3)->pushIndex (v0);
-
-	this->portal2->compile ();
+	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
+		* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 }
 
 std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createPortalFrameBuffer ()
 {
 	unsigned int fboId;
-
 	glGenFramebuffers (1, &fboId);
 	glBindFramebuffer (GL_FRAMEBUFFER, fboId);
 
@@ -105,77 +82,25 @@ ImplementationFramebufferObjects::~ImplementationFramebufferObjects ()
 	glDeleteFramebuffers (1, &this->portal2FrameBuffer);
 }
 
-void ImplementationFramebufferObjects::render ()
+glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (Camera *camera, Portal *inPortal, Portal *outPortal)
 {
-	Implementation::render ();
-
-	// PORTAL 1
-
-	glBindFramebuffer (GL_FRAMEBUFFER, this->portal1FrameBuffer);
-
-	glm::vec3 position = this->camera->getPosition ();
-	this->camera->setPosition (position - this->portal1Position + this->portal2Position);
-
-	glm::mat4 viewMatrix = this->camera->getTranslationMatrix ();
+	glm::mat4 viewMatrix = getNewCameraView (camera->getTranslationMatrix (), inPortal, outPortal);
 	Shader::updateAllViewMatrices (viewMatrix);
 
 	glm::vec3 portalViewPoints[4];
 
 	for (int i = 0; i < 4; i++)
 	{
-		portalViewPoints[i] = viewMatrix * glm::vec4 (portal2Vertices[i], 1.0f);
+		portalViewPoints[i] = viewMatrix * outPortal->toWorld * glm::vec4 (Portal::vertices[i], 1.0f);
 	}
 
 	glm::vec3 TL = portalViewPoints[1];
 	glm::vec3 BR = portalViewPoints[3];
-
-	float common_z = abs(TL.z);
-	float near_z = 0.1f;
-
-	float left = TL.x / common_z * near_z;
-	float right = BR.x / common_z * near_z;
-	float bottom = BR.y / common_z * near_z;
-	float top = TL.y / common_z * near_z;
-
-	glm::mat4 frustumProjection = glm::frustum (left, right, bottom, top, near_z, 100.0f);
-
-	Shader::updateAllProjectionMatrices (frustumProjection);
-
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2Position);
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2Normal);
-
-	Shader::PORTAL_CLIP->bind ();
-
-	glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
-	glClearColor (0.2f, 0.3f, 0.3f, 1.0f);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	level->render ();
-
-	this->camera->setPosition (position);
-
-	// PORTAL 2
-
-	glBindFramebuffer (GL_FRAMEBUFFER, this->portal2FrameBuffer);
-
-	position = this->camera->getPosition ();
-	this->camera->setPosition (position - this->portal2Position + this->portal1Position);
-
-	viewMatrix = this->camera->getTranslationMatrix ();
-	Shader::updateAllViewMatrices (viewMatrix);
-
-	for (int i = 0; i < 4; i++)
-	{
-		portalViewPoints[i] = viewMatrix * glm::vec4 (portal1Vertices[i], 1.0f);
-	}
-
-	TL = portalViewPoints[1];
 	glm::vec3 BL = portalViewPoints[0];
-	BR = portalViewPoints[3];
 
-	float dz = BL.z - TL.z;
-	float dx = BL.x - TL.x;
-	
+	float dz = BL.z - BR.z;
+	float dx = BL.x - BR.x;
+
 	float rotationY = 0;
 
 	if (dz == 0 && dx == 0)
@@ -184,57 +109,90 @@ void ImplementationFramebufferObjects::render ()
 			rotationY = M_PI;
 	}
 	else
-		rotationY = atan2(dz, dx);
+		rotationY = atan2 (dz, dx);
 
-	glm::mat4 rotation = glm::rotate (glm::mat4 (1), rotationY, glm::vec3 (0.0f, 1.0f, 0.0f));
+	glm::mat4 rotation = glm::rotate (glm::mat4 (1.0f), rotationY, glm::vec3 (0.0f, 1.0f, 0.0f));
+
+	// There might be a nicer way to achieve this using matrices as below:
+	// rotation = glm::mat4 (glm::inverse (glm::mat3 (inPortal->toWorld))); 
+	// The issue however is that we only want this transformation to capture the notion of rotation not scaling
 
 	TL = rotation * glm::vec4 (TL, 1.0f);
 	BL = rotation * glm::vec4 (BL, 1.0f);
 	BR = rotation * glm::vec4 (BR, 1.0f);
 
-	common_z = abs (TL.z);
-	near_z = 0.1f;
+	float common_z = abs (TL.z);
+	float near_z = 0.1f;
 
-	left = TL.x / common_z * near_z;
-	right = BR.x / common_z * near_z;
-	bottom = BR.y / common_z * near_z;
-	top = TL.y / common_z * near_z;
+	float left = TL.x / common_z * near_z;
+	float right = BR.x / common_z * near_z;
+	float bottom = BR.y / common_z * near_z;
+	float top = TL.y / common_z * near_z;
 
-	frustumProjection = glm::frustum (left, right, bottom, top, near_z, 100.0f);
+	glm::mat4 frustumProjection = glm::frustum (right, left, bottom, top, near_z, 100.0f);
 
-	Shader::updateAllProjectionMatrices (frustumProjection * rotation);
+	return frustumProjection * rotation;
+}
 
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1Position);
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1Normal);
+void ImplementationFramebufferObjects::render ()
+{
+	Implementation::render ();
+
+	// PORTAL 1
+
+	glBindFramebuffer (GL_FRAMEBUFFER, this->portal1FrameBuffer);
+
+	Shader::updateAllProjectionMatrices (generateCustomProjection (this->camera, portal1, portal2));
+
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2->getNormal ());
 
 	Shader::PORTAL_CLIP->bind ();
 
 	glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
-	glClearColor (0.2f, 0.3f, 0.3f, 1.0f);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	level->render ();
 
-	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+	// PORTAL 2
+
+	glBindFramebuffer (GL_FRAMEBUFFER, this->portal2FrameBuffer);
+
+	Shader::updateAllProjectionMatrices (generateCustomProjection (this->camera, portal2, portal1));
+
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1->getNormal ());
+
+	Shader::PORTAL_CLIP->bind ();
+
+	glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	level->render ();
 
 	// MAIN SCENE
 
-	this->camera->setPosition (position);
+	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
-	viewMatrix = this->camera->getViewMatrix ();
-	Shader::updateAllViewMatrices (viewMatrix);
+	Shader::updateAllViewMatrices (this->camera->getViewMatrix ());
 
-	Shader::DEFAULT->updateAllProjectionMatrices (glm::perspective (45.0f, this->window->getAspectRatio (), 0.1f, 100.0f));
+	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, this->window->getAspectRatio (), 0.1f, 100.0f));
 	glViewport (0, 0, this->window->getWidth (), this->window->getHeight ());
 
 	Shader::DEFAULT->bind ();
 	level->render ();
 
+	Shader::updateAllModelMatrices (portal1->toWorld);
 	glBindTexture (GL_TEXTURE_2D, this->portal1Texture);
-	portal1->render ();
+	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
+	portal1->model->render ();
 
+	Shader::updateAllModelMatrices (portal2->toWorld);
 	glBindTexture (GL_TEXTURE_2D, this->portal2Texture);
-	portal2->render ();
+	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
+	portal2->model->render ();
+
+	Shader::updateAllModelMatrices (glm::mat4 (1.0f));
 }
 
 void ImplementationFramebufferObjects::tick ()

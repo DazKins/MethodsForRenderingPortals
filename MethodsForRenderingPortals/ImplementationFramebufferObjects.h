@@ -14,20 +14,6 @@ public:
 	void tick ();
 
 private:
-	glm::vec3 portal1Position;
-	glm::vec3 portal1Normal;
-
-	glm::vec3 portal2Position;
-	glm::vec3 portal2Normal;
-
-	VAO* portal1;
-	VAO* portal2;
-
-	VAO* bunny;
-
-	glm::vec3 portal1Vertices[4];
-	glm::vec3 portal2Vertices[4];
-
 	unsigned int portal1FrameBuffer;
 	unsigned int portal1Texture;
 
@@ -35,6 +21,8 @@ private:
 	unsigned int portal2Texture;
 
 	static std::tuple<unsigned int, unsigned int> createPortalFrameBuffer ();
+
+	static glm::mat4 generateCustomProjection (Camera *camera, Portal *inPortal, Portal *outPortal);
 
 	static const unsigned int portalTextureSize = 400;
 };

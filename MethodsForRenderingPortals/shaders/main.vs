@@ -8,8 +8,6 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
-uniform bool useTexture;
-
 out vec3 position;
 out vec3 normal;
 out vec2 texCoord;

@@ -82,6 +82,7 @@ std::vector<Shader*> Shader::ALL_SHADERS;
 Shader* Shader::DEFAULT;
 Shader* Shader::PORTAL_CLIP;
 Shader* Shader::PORTAL_STENCIL_BUFFER;
+Shader* Shader::PORTAL_FRAMEBUFFER_OBJECT;
 
 void Shader::initShaders ()
 {
@@ -93,6 +94,9 @@ void Shader::initShaders ()
 
 	Shader::PORTAL_STENCIL_BUFFER = new Shader ("shaders/portal_stencil_buffer");
 	ALL_SHADERS.push_back (Shader::PORTAL_STENCIL_BUFFER);
+
+	Shader::PORTAL_FRAMEBUFFER_OBJECT = new Shader ("shaders/portal_framebuffer_object");
+	ALL_SHADERS.push_back (Shader::PORTAL_FRAMEBUFFER_OBJECT);
 
 	glm::mat4 id = glm::mat4 (1.0f);
 	updateAllProjectionMatrices (id);

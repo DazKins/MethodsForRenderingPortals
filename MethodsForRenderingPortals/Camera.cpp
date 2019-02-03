@@ -18,7 +18,8 @@ glm::mat4 Camera::getViewMatrix ()
 {
 	glm::mat4 rotateX = glm::rotate (glm::mat4 (1.0), -this->rotation.x, glm::vec3 (1.0, 0.0, 0.0));
 	glm::mat4 rotateY = glm::rotate (rotateX, -this->rotation.y, glm::vec3(0.0, 1.0, 0.0));
-	return glm::translate (rotateY, -this->position);
+	glm::mat4 rotateZ = glm::rotate (rotateY, -this->rotation.z, glm::vec3 (0.0, 0.0, 1.0));
+	return glm::translate (rotateZ, -this->position);
 }
 
 glm::mat4 Camera::getTranslationMatrix ()
@@ -35,7 +36,7 @@ void Camera::setPosition (glm::vec3 position)
 	this->position = position;
 }
 
-void Camera::setRotation (glm::vec2 rotation)
+void Camera::setRotation (glm::vec3 rotation)
 {
 	this->rotation = rotation;
 }
@@ -43,4 +44,9 @@ void Camera::setRotation (glm::vec2 rotation)
 glm::vec3 Camera::getPosition()
 {
 	return this->position;
+}
+
+glm::vec3 Camera::getRotation ()
+{
+	return this->rotation;
 }
