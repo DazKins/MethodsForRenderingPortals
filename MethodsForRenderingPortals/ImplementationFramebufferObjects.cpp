@@ -20,24 +20,6 @@ ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input
 	auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
 	this->portal2FrameBuffer = std::get<0> (portal2);
 	this->portal2Texture = std::get<1> (portal2);
-
-	float epsilon = 0.0005f;
-
-	glm::vec3 portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
-	glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
-
-	this->portal1 = new Portal ();
-	this->portal1->generatePortalMesh ();
-	this->portal1->model->compile ();
-
-	this->portal1->toWorld = glm::translate (glm::mat4 (1.0f), portal1Position);
-
-	this->portal2 = new Portal ();
-	this->portal2->generatePortalMesh ();
-	this->portal2->model->compile ();
-
-	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
-		* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 }
 
 std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createPortalFrameBuffer ()
@@ -98,24 +80,7 @@ glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (Camera *ca
 	glm::vec3 BR = portalViewPoints[3];
 	glm::vec3 BL = portalViewPoints[0];
 
-	float dz = BL.z - BR.z;
-	float dx = BL.x - BR.x;
-
-	float rotationY = 0;
-
-	if (dz == 0 && dx == 0)
-	{
-		if (BL.z > 0)
-			rotationY = M_PI;
-	}
-	else
-		rotationY = atan2 (dz, dx);
-
-	glm::mat4 rotation = glm::rotate (glm::mat4 (1.0f), rotationY, glm::vec3 (0.0f, 1.0f, 0.0f));
-
-	// There might be a nicer way to achieve this using matrices as below:
-	// rotation = glm::mat4 (glm::inverse (glm::mat3 (inPortal->toWorld))); 
-	// The issue however is that we only want this transformation to capture the notion of rotation not scaling
+	glm::mat4 rotation = glm::mat4 (glm::inverse (glm::mat3 (inPortal->toWorld)));
 
 	TL = rotation * glm::vec4 (TL, 1.0f);
 	BL = rotation * glm::vec4 (BL, 1.0f);

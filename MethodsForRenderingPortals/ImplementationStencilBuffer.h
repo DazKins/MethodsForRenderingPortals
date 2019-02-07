@@ -14,6 +14,6 @@ public:
 	void tick ();
 
 private:
-	void renderFromPerspective (Camera* cam);
+	void renderFromPerspective (glm::mat4 viewMatrix);
 };
 

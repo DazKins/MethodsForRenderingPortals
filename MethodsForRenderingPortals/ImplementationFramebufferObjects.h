@@ -24,6 +24,6 @@ private:
 
 	static glm::mat4 generateCustomProjection (Camera *camera, Portal *inPortal, Portal *outPortal);
 
-	static const unsigned int portalTextureSize = 400;
+	static const unsigned int portalTextureSize = 100;
 };
 
