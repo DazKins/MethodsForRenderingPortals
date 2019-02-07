@@ -26,56 +26,49 @@ void ImplementationStencilBuffer::tick ()
 	Implementation::tick ();
 }
 
+const int ImplementationStencilBuffer::MAX_RECURSION_DEPTH = 10;
+
 void ImplementationStencilBuffer::renderFromPerspective (glm::mat4 viewMatrix)
 {
-	Shader::updateAllViewMatrices (viewMatrix);
+	renderPortalView (viewMatrix, portal1, portal2);
+	renderPortalView (viewMatrix, portal2, portal1);
+}
 
-	glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
+void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal)
+{
+	glm::mat4 viewMatrices[MAX_RECURSION_DEPTH];
+	viewMatrices[0] = viewMatrix;
 
-	glStencilFunc (GL_EQUAL, 0, 0xFF);
-	Shader::DEFAULT->bind ();
-	level->render ();
+	for (int i = 1; i < MAX_RECURSION_DEPTH - 1; i++)
+	{
+		viewMatrices[i] = getNewCameraView (viewMatrices[i - 1], inPortal, outPortal);
+	}
 
-	glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
-	glStencilFunc (GL_ALWAYS, 1, 0xFF);
-	Shader::updateAllModelMatrices (portal1->toWorld);
-	Shader::PORTAL_STENCIL_BUFFER->bind ();
-	this->portal1->model->render ();
+	for (int i = 0; i < MAX_RECURSION_DEPTH; i++)
+	{
+		Shader::updateAllViewMatrices (viewMatrices[i]);
 
-	glStencilFunc (GL_ALWAYS, 2, 0xFF);
-	Shader::updateAllModelMatrices (portal2->toWorld);
-	Shader::PORTAL_STENCIL_BUFFER->bind ();
-	this->portal2->model->render ();
+		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
+		glStencilFunc (GL_EQUAL, i, 0xFF);
 
-	Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+		Shader::PORTAL_CLIP->bind ();
 
-	glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
+		if (i == 0)
+			Shader::DEFAULT->bind ();
 
-	// PORTAL 1
-	glm::mat4 newViewMatrix = getNewCameraView (viewMatrix, portal1, portal2);
-	Shader::updateAllViewMatrices (newViewMatrix);
+		level->render ();
 
-	glStencilFunc (GL_EQUAL, 1, 0xFF);
+		glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
+		glStencilFunc (GL_EQUAL, i, 0xFF);
 
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2->getPosition ());
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2->getNormal ());
-	Shader::PORTAL_CLIP->bind ();
+		Shader::updateAllModelMatrices (inPortal->toWorld);
+		Shader::PORTAL_STENCIL_BUFFER->bind ();
+		inPortal->model->render ();
+		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
 
-	glClear (GL_DEPTH_BUFFER_BIT);
-	level->render ();
-
-	// PORTAL 2
-
-	newViewMatrix = getNewCameraView (viewMatrix, portal2, portal1);
-	Shader::updateAllViewMatrices (newViewMatrix);
-
-	glStencilFunc (GL_EQUAL, 2, 0xFF);
-
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1->getPosition ());
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1->getNormal ());
-	Shader::PORTAL_CLIP->bind ();
-
-	glClear (GL_DEPTH_BUFFER_BIT);
-	level->render ();
+		glClear (GL_DEPTH_BUFFER_BIT);
+	}
 }

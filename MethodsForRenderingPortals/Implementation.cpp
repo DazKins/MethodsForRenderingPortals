@@ -29,6 +29,7 @@ Implementation::Implementation (Input* input, Window* window)
 
 	glm::vec3 portal1Position = glm::vec3 (0.5f, 0.0f, -(2.5f - epsilon));
 	glm::vec3 portal2Position = glm::vec3 (0.5f, 0.0f, (2.5f - epsilon));
+	//glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
 
 	this->portal1->generatePortalMesh ();
 	this->portal2->generatePortalMesh ();
