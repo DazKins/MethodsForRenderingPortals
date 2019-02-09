@@ -51,8 +51,8 @@ void init ()
 
 	Shader::initShaders ();
 
-	//implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
-	implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
+	implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
+	//implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
 
 	window->hideCursor ();
 }

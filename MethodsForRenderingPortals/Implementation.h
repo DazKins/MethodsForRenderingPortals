@@ -31,6 +31,9 @@ public:
 
 	static glm::mat4 getNewCameraView (glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal);
 
+	Portal* getPortal1 () const;
+	Portal* getPortal2 () const;
+
 protected:
 	Level *level;
 	Input *input;
