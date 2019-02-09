@@ -13,13 +13,19 @@
 
 ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window) : Implementation (input, window)
 {
-	auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
-	this->portal1FrameBuffer = std::get<0> (portal1);
-	this->portal1Texture = std::get<1> (portal1);
+	for (int i = 0; i < MAX_RECURSION_DEPTH - 1; i++)
+	{
+		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		this->portal1FrameBuffers.push_back (std::get<0> (portal1));
+		this->portal1Textures.push_back (std::get<1> (portal1));
+	}
 
-	auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
-	this->portal2FrameBuffer = std::get<0> (portal2);
-	this->portal2Texture = std::get<1> (portal2);
+	for (int i = 0; i < MAX_RECURSION_DEPTH - 1; i++)
+	{
+		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		this->portal2FrameBuffers.push_back (std::get<0> (portal2));
+		this->portal2Textures.push_back (std::get<1> (portal2));
+	}
 }
 
 std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createPortalFrameBuffer ()
@@ -37,8 +43,6 @@ std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createP
 
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
 
@@ -60,13 +64,16 @@ std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createP
 
 ImplementationFramebufferObjects::~ImplementationFramebufferObjects ()
 {
-	glDeleteFramebuffers (1, &this->portal1FrameBuffer);
-	glDeleteFramebuffers (1, &this->portal2FrameBuffer);
+	for (unsigned int i : this->portal1FrameBuffers)
+		glDeleteFramebuffers (1, &i);
+
+	for (unsigned int i : this->portal2FrameBuffers)
+		glDeleteFramebuffers (1, &i);
 }
 
-glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (Camera *camera, Portal *inPortal, Portal *outPortal)
+glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 translationMatrix, Portal *inPortal, Portal *outPortal)
 {
-	glm::mat4 viewMatrix = getNewCameraView (camera->getTranslationMatrix (), inPortal, outPortal);
+	glm::mat4 viewMatrix = getNewCameraView (translationMatrix, inPortal, outPortal);
 	Shader::updateAllViewMatrices (viewMatrix);
 
 	glm::vec3 portalViewPoints[4];
@@ -99,43 +106,49 @@ glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (Camera *ca
 	return frustumProjection * rotation;
 }
 
+void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
+	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers)
+{
+	std::vector<glm::mat4> translationMatrices;
+	translationMatrices.push_back (translationMatrix);
+
+	for (int i = 1; i < MAX_RECURSION_DEPTH; i++)
+	{
+		translationMatrices.push_back (getNewCameraView (translationMatrices[i - 1], inPortal, outPortal));
+	}
+
+	for (int i = MAX_RECURSION_DEPTH - 1; i > 0; i--)
+	{
+		glBindFramebuffer (GL_FRAMEBUFFER, inPortalFrameBuffers[i - 1]);
+
+		Shader::updateAllViewMatrices (translationMatrices[i]);
+
+		Shader::updateAllProjectionMatrices (generateCustomProjection (translationMatrices[i - 1], inPortal, outPortal));
+
+		glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
+		Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
+
+		Shader::PORTAL_CLIP->bind ();
+		level->render ();
+
+		if (i < MAX_RECURSION_DEPTH - 1)
+		{
+			Shader::updateAllModelMatrices (inPortal->toWorld);
+			glBindTexture (GL_TEXTURE_2D, inPortalTextures[i]);
+			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
+			inPortal->model->render ();
+			Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+		}
+	}
+}
+
 void ImplementationFramebufferObjects::render ()
 {
-	Implementation::render ();
-
-	// PORTAL 1
-
-	glBindFramebuffer (GL_FRAMEBUFFER, this->portal1FrameBuffer);
-
-	Shader::updateAllProjectionMatrices (generateCustomProjection (this->camera, portal1, portal2));
-
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal2->getPosition ());
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal2->getNormal ());
-
-	Shader::PORTAL_CLIP->bind ();
-
-	glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	level->render ();
-
-	// PORTAL 2
-
-	glBindFramebuffer (GL_FRAMEBUFFER, this->portal2FrameBuffer);
-
-	Shader::updateAllProjectionMatrices (generateCustomProjection (this->camera, portal2, portal1));
-
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", portal1->getPosition ());
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", portal1->getNormal ());
-
-	Shader::PORTAL_CLIP->bind ();
-
-	glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	level->render ();
-
-	// MAIN SCENE
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal1, portal2, portal1Textures, portal1FrameBuffers);
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal2, portal1, portal2Textures, portal2FrameBuffers);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
@@ -148,12 +161,12 @@ void ImplementationFramebufferObjects::render ()
 	level->render ();
 
 	Shader::updateAllModelMatrices (portal1->toWorld);
-	glBindTexture (GL_TEXTURE_2D, this->portal1Texture);
+	glBindTexture (GL_TEXTURE_2D, this->portal1Textures[0]);
 	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 	portal1->model->render ();
 
 	Shader::updateAllModelMatrices (portal2->toWorld);
-	glBindTexture (GL_TEXTURE_2D, this->portal2Texture);
+	glBindTexture (GL_TEXTURE_2D, this->portal2Textures[0]);
 	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 	portal2->model->render ();
 

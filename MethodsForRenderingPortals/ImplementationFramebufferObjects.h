@@ -3,6 +3,7 @@
 #include "Implementation.h"
 
 #include <tuple>
+#include <vector>
 
 class ImplementationFramebufferObjects : public Implementation
 {
@@ -14,16 +15,19 @@ public:
 	void tick ();
 
 private:
-	unsigned int portal1FrameBuffer;
-	unsigned int portal1Texture;
+	std::vector<unsigned int> portal1FrameBuffers;
+	std::vector<unsigned int> portal1Textures;
 
-	unsigned int portal2FrameBuffer;
-	unsigned int portal2Texture;
+	std::vector<unsigned int> portal2FrameBuffers;
+	std::vector<unsigned int> portal2Textures;
 
 	static std::tuple<unsigned int, unsigned int> createPortalFrameBuffer ();
 
-	static glm::mat4 generateCustomProjection (Camera *camera, Portal *inPortal, Portal *outPortal);
+	static glm::mat4 generateCustomProjection (glm::mat4 translationMatrix, Portal *inPortal, Portal *outPortal);
 
-	static const unsigned int portalTextureSize = 100;
+	void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
+		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers);
+
+	static const unsigned int portalTextureSize = 400;
 };
 

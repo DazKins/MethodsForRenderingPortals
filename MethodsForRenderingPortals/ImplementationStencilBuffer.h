@@ -16,7 +16,5 @@ public:
 private:
 	void renderFromPerspective (glm::mat4 viewMatrix);
 	void renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal);
-
-	static const int MAX_RECURSION_DEPTH;
 };
 

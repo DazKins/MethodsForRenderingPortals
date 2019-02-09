@@ -8,8 +8,6 @@
 
 #include "Shader.h"
 
-float Implementation::PORTAL_SIZE = 0.5f;
-
 Implementation::Implementation (Input* input, Window* window)
 {
 	this->window = window;
@@ -43,6 +41,8 @@ Implementation::Implementation (Input* input, Window* window)
 }
 
 const float Portal::PORTAL_SIZE = 0.5f;
+
+const int Implementation::MAX_RECURSION_DEPTH = 10;
 
 const glm::vec3 Portal::vertices[] = {
 	glm::vec3 (-Portal::PORTAL_SIZE / 2.0f, -Portal::PORTAL_SIZE / 2.0f, 0.0f),

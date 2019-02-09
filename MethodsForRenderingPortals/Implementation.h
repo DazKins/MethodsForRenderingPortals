@@ -41,5 +41,5 @@ protected:
 	Portal *portal1;
 	Portal *portal2;
 
-	static float PORTAL_SIZE;
+	static const int MAX_RECURSION_DEPTH;
 };

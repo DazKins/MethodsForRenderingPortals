@@ -4,6 +4,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
+#include <vector>
 
 ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window) : Implementation (input, window)
 {
@@ -26,8 +27,6 @@ void ImplementationStencilBuffer::tick ()
 	Implementation::tick ();
 }
 
-const int ImplementationStencilBuffer::MAX_RECURSION_DEPTH = 10;
-
 void ImplementationStencilBuffer::renderFromPerspective (glm::mat4 viewMatrix)
 {
 	renderPortalView (viewMatrix, portal1, portal2);
@@ -36,12 +35,12 @@ void ImplementationStencilBuffer::renderFromPerspective (glm::mat4 viewMatrix)
 
 void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal)
 {
-	glm::mat4 viewMatrices[MAX_RECURSION_DEPTH];
-	viewMatrices[0] = viewMatrix;
+	std::vector<glm::mat4> viewMatrices;
+	viewMatrices.push_back (viewMatrix);
 
-	for (int i = 1; i < MAX_RECURSION_DEPTH - 1; i++)
+	for (int i = 1; i < MAX_RECURSION_DEPTH; i++)
 	{
-		viewMatrices[i] = getNewCameraView (viewMatrices[i - 1], inPortal, outPortal);
+		viewMatrices.push_back (getNewCameraView (viewMatrices[i - 1], inPortal, outPortal));
 	}
 
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
