@@ -40,6 +40,13 @@ void render ()
 
 void init ()
 {
+	std::string option;
+	do
+	{
+		std::cout << "Enter f for FBO implementation, s for stencil buffer" << std::endl;
+		std::cin >> option;
+	} while (option[0] != 'f' && option[0] != 'F' && option[0] != 's' && option[0] != 'S');
+
 	glfwInit ();
 
 	window = new Window (INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
@@ -52,8 +59,10 @@ void init ()
 
 	Shader::initShaders ();
 
-	//implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
-	implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
+	if (option[0] == 'f' || option[0] == 'F')
+		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
+	else if (option[0] == 's' || option[0] == 'S')
+		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
 
 	window->hideCursor ();
 }
