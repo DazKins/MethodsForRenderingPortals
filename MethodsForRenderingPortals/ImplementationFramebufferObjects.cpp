@@ -110,6 +110,9 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 		translationMatrices.push_back (getNewCameraView (translationMatrices[i - 1], inPortal, outPortal));
 	}
 
+	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
+	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
+
 	for (int i = MAX_RECURSION_DEPTH - 1; i > 0; i--)
 	{
 		glBindFramebuffer (GL_FRAMEBUFFER, inPortalFrameBuffers[i - 1]);
@@ -120,9 +123,6 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 
 		glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
-		Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
 		Shader::PORTAL_CLIP->bind ();
 		level->render ();
