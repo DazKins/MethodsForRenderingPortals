@@ -45,7 +45,7 @@ bool Window::create ()
 
 	if (!this->initializeGlad ()) return false;
 
-	glfwSwapInterval (1);
+	glfwSwapInterval (0);
 }
 
 bool Window::shouldClose()
@@ -85,6 +85,7 @@ unsigned int Window::getHeight ()
 
 void Window::update()
 {
+	//glFlush ();
 	glfwSwapBuffers(this->windowHandle);
 	glfwPollEvents();
 }

@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <chrono>
 
 #include "Window.h"
 #include "Input.h"
@@ -59,10 +60,45 @@ void init ()
 
 void mainLoop ()
 {
+	float delta = 0.0f;
+	float nsPerTick = 1000000000.0f / 60.0f;
+	auto lastTime = std::chrono::high_resolution_clock::now ();
+
+	int secondsPerDebugOutput = 1;
+	auto lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
+
+	long totalFrameTime = 0;
+	int frameCount = 0;
+
 	while (running)
 	{
-		tick ();
+		auto now = std::chrono::high_resolution_clock::now ();
+		delta += std::chrono::duration_cast<std::chrono::nanoseconds>(now - lastTime).count() / nsPerTick;
+		lastTime = now;
+
+		while (delta >= 1.0f)
+		{
+			tick ();
+			delta -= 1.0f;
+		}
+
+		auto before = std::chrono::high_resolution_clock::now ();
 		render ();
+		glFinish ();
+		auto after = std::chrono::high_resolution_clock::now ();
+
+		long frameTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(after - before).count ();
+		frameCount++;
+		totalFrameTime += frameTimeNs;
+
+		if ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now ().time_since_epoch () - lastDebugOutput)).count() >= secondsPerDebugOutput * 1000)
+		{
+			lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
+			float avgFrameTime = totalFrameTime / frameCount;
+			totalFrameTime = 0;
+			frameCount = 0;
+			std::cout << "Avg. frame time: " << avgFrameTime / 1000000 << "ms (" << avgFrameTime << "ns)" << std::endl;
+		}
 
 		if (window->shouldClose ())
 			running = false;

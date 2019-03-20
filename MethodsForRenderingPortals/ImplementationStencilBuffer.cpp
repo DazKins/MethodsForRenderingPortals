@@ -61,7 +61,6 @@ void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal
 		level->render ();
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
-		glStencilFunc (GL_EQUAL, i, 0xFF);
 
 		Shader::updateAllModelMatrices (inPortal->toWorld);
 		Shader::PORTAL_STENCIL_BUFFER->bind ();

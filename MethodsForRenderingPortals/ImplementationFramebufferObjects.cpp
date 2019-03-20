@@ -76,21 +76,14 @@ glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 
 	glm::mat4 viewMatrix = getNewCameraView (translationMatrix, inPortal, outPortal);
 	Shader::updateAllViewMatrices (viewMatrix);
 
-	glm::vec3 portalViewPoints[4];
+	glm::mat4 viewModel = viewMatrix * outPortal->toWorld;
 
-	for (int i = 0; i < 4; i++)
-	{
-		portalViewPoints[i] = viewMatrix * outPortal->toWorld * glm::vec4 (Portal::vertices[i], 1.0f);
-	}
+	glm::vec3 TL = viewModel * glm::vec4 (Portal::vertices[1], 1.0f);
+	glm::vec3 BR = viewModel * glm::vec4 (Portal::vertices[3], 1.0f);
 
-	glm::vec3 TL = portalViewPoints[1];
-	glm::vec3 BR = portalViewPoints[3];
-	glm::vec3 BL = portalViewPoints[0];
-
-	glm::mat4 rotation = glm::mat4 (glm::inverse (glm::mat3 (inPortal->toWorld)));
+	glm::mat4 rotation = glm::inverse (glm::mat3 (inPortal->toWorld));
 
 	TL = rotation * glm::vec4 (TL, 1.0f);
-	BL = rotation * glm::vec4 (BL, 1.0f);
 	BR = rotation * glm::vec4 (BR, 1.0f);
 
 	float common_z = abs (TL.z);

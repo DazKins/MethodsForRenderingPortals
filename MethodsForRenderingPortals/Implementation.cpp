@@ -25,19 +25,18 @@ Implementation::Implementation (Input* input, Window* window)
 	this->portal1 = new Portal ();
 	this->portal2 = new Portal ();
 
-	glm::vec3 portal1Position = glm::vec3 (0.5f, 0.0f, -(2.5f - epsilon));
-	//glm::vec3 portal2Position = glm::vec3 (0.5f, 0.0f, (2.5f - epsilon));
-	glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
-
 	this->portal1->generatePortalMesh ();
 	this->portal2->generatePortalMesh ();
 
+	glm::vec3 portal1Position = glm::vec3 (0.5f, 0.0f, -(2.5f - epsilon));
 	this->portal1->toWorld = glm::translate (glm::mat4 (1.0f), portal1Position);
 
-	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
-		* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
+	//glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
+	//this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
+	//	* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 
-	//this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
+	glm::vec3 portal2Position = glm::vec3 (0.5f, 0.0f, (2.5f - epsilon));
+	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 }
 
 const float Portal::PORTAL_SIZE = 0.5f;
