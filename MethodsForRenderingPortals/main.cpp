@@ -96,7 +96,8 @@ void mainLoop ()
 	long totalFrameTime = 0;
 	int frameCount = 0;
 
-	std::ofstream frameTimingFile ("frame_timings.csv");
+	std::ofstream frameTimingFile;
+	frameTimingFile.open ("frame_timings.csv", std::ofstream::out | std::ofstream::trunc);
 
 	while (running)
 	{
@@ -124,16 +125,19 @@ void mainLoop ()
 			lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
 			float avgFrameTime = totalFrameTime / frameCount;
 			float avgFrameTimeMs = avgFrameTime / 1000000;
+
 			totalFrameTime = 0;
 			frameCount = 0;
+
 			std::cout << "Avg. frame time: " << avgFrameTimeMs << "ms (" << avgFrameTime << "ns)" << std::endl;
-			
 			frameTimingFile << avgFrameTimeMs << ",";
 		}
 
 		if (window->shouldClose ())
 			running = false;
 	}
+
+	frameTimingFile.close ();
 }
 
 int main ()
