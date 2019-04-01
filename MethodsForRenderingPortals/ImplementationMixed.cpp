@@ -67,17 +67,17 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 
 		level->render ();
 
-		glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
-
 		Shader::updateAllModelMatrices (inPortal->toWorld);
 		if (i == cutoff)
 		{
-			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);
+			glStencilFunc (GL_GEQUAL, i, 0xFF);
 			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
+			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);
 			inPortal->model->render ();
 		}
 		else
 		{
+			glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
 			Shader::PORTAL_STENCIL_BUFFER->bind ();
 			inPortal->model->render ();
 		}
@@ -95,6 +95,9 @@ void ImplementationMixed::render ()
 	glClear (GL_STENCIL_BUFFER_BIT);
 
 	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
+
+	glClear (GL_STENCIL_BUFFER_BIT);
+
 	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
 }
 

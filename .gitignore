@@ -22,3 +22,5 @@ Release
 ipch
 *sdf
 .vs
+
+*.csv

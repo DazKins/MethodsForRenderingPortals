@@ -10,6 +10,7 @@ public:
 	~Level ();
 
 	void render ();
+	void tick ();
 
 private:
 	VAO* wallVAO;

@@ -1,6 +1,7 @@
 #include "Level.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <math.h>
 
 #include "Shader.h"
 #include "ModelLoader.h"
@@ -62,6 +63,8 @@ Level::Level (float xSize, float ySize, float zSize)
 
 Level::~Level () { }
 
+float t = 0.0f;
+
 void Level::render ()
 {
 	this->wallTexture->bind ();
@@ -70,5 +73,13 @@ void Level::render ()
 	this->floorTexture->bind ();
 	this->floorVAO->render ();
 
+	Shader::updateAllModelMatrices (glm::translate (glm::mat4(1.0f), glm::vec3 (-sin(t), 0.0f, 0.0f)));
+	Shader::DEFAULT->bind ();
 	this->bunny->render ();
+	Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+}
+
+void Level::tick ()
+{
+	t += 0.01f;
 }
