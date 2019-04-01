@@ -11,17 +11,14 @@
 #include "Shader.h"
 #include "ModelLoader.h"
 
-ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window) : Implementation (input, window)
+ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window,  int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
 {
-	for (int i = 0; i < MAX_RECURSION_DEPTH - 1; i++)
+	for (int i = 0; i < maxRecursionDepth - 1; i++)
 	{
 		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
 		this->portal1FrameBuffers.push_back (std::get<0> (portal1));
 		this->portal1Textures.push_back (std::get<1> (portal1));
-	}
 
-	for (int i = 0; i < MAX_RECURSION_DEPTH - 1; i++)
-	{
 		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
 		this->portal2FrameBuffers.push_back (std::get<0> (portal2));
 		this->portal2Textures.push_back (std::get<1> (portal2));
@@ -100,12 +97,12 @@ glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 
 }
 
 void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
-	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers)
+	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth, int cutoff)
 {
 	std::vector<glm::mat4> translationMatrices;
 	translationMatrices.push_back (translationMatrix);
 
-	for (int i = 1; i < MAX_RECURSION_DEPTH; i++)
+	for (int i = 1; i < maxRecursionDepth; i++)
 	{
 		translationMatrices.push_back (getNewCameraView (translationMatrices[i - 1], inPortal, outPortal));
 	}
@@ -113,9 +110,9 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
-	for (int i = MAX_RECURSION_DEPTH - 1; i > 0; i--)
+	for (int i = maxRecursionDepth - 1; i > cutoff; i--)
 	{
-		glBindFramebuffer (GL_FRAMEBUFFER, inPortalFrameBuffers[i - 1]);
+		glBindFramebuffer (GL_FRAMEBUFFER, inPortalFrameBuffers[i - 1 - cutoff]);
 
 		Shader::updateAllViewMatrices (translationMatrices[i]);
 
@@ -127,10 +124,10 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 		Shader::PORTAL_CLIP->bind ();
 		level->render ();
 
-		if (i < MAX_RECURSION_DEPTH - 1)
+		if (i < maxRecursionDepth - 1)
 		{
 			Shader::updateAllModelMatrices (inPortal->toWorld);
-			glBindTexture (GL_TEXTURE_2D, inPortalTextures[i]);
+			glBindTexture (GL_TEXTURE_2D, inPortalTextures[i - cutoff]);
 			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 			inPortal->model->render ();
 			Shader::updateAllModelMatrices (glm::mat4 (1.0f));
@@ -138,10 +135,16 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 	}
 }
 
+void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
+	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth)
+{
+	renderFromPortalPerspective (translationMatrix, inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, maxRecursionDepth, 0);
+}
+
 void ImplementationFramebufferObjects::render ()
 {
-	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal1, portal2, portal1Textures, portal1FrameBuffers);
-	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal2, portal1, portal2Textures, portal2FrameBuffers);
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth);
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 

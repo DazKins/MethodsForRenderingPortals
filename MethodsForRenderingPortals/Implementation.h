@@ -23,7 +23,7 @@ struct Portal
 class Implementation
 {
 public:
-	Implementation (Input* input, Window* window);
+	Implementation (Input* input, Window* window, int maxRecursionDepth);
 	~Implementation ();
 
 	virtual void tick ();
@@ -44,5 +44,5 @@ protected:
 	Portal *portal1;
 	Portal *portal2;
 
-	static const int MAX_RECURSION_DEPTH;
+	int maxRecursionDepth;
 };

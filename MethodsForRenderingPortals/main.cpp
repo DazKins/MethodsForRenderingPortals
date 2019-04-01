@@ -1,12 +1,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <algorithm>
 #include <chrono>
+#include <fstream>
 
 #include "Window.h"
 #include "Input.h"
 #include "ImplementationStencilBuffer.h"
 #include "ImplementationFramebufferObjects.h"
+#include "ImplementationMixed.h"
 #include "Shader.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
@@ -43,9 +46,21 @@ void init ()
 	std::string option;
 	do
 	{
-		std::cout << "Enter f for FBO implementation, s for stencil buffer" << std::endl;
+		std::cout << "Choose Implementation:" << std::endl << "s : stencil buffers" << std::endl << "f : framebuffer objects" << std::endl << "m : mixed" << std::endl;  
 		std::cin >> option;
-	} while (option[0] != 'f' && option[0] != 'F' && option[0] != 's' && option[0] != 'S');
+		std::transform (option.begin (), option.end (), option.begin (), ::tolower);
+	} while (option[0] != 'f' && option[0] != 's' && option[0] != 'm');
+
+	int recursionDepth = 0;
+	std::cout << "Enter max recursion depth:" << std::endl;
+	std::cin >> recursionDepth;
+
+	int cutoff = 0;
+	if (option[0] == 'm')
+	{
+		std::cout << "Enter cutoff:" << std::endl;
+		std::cin >> cutoff;
+	}
 
 	glfwInit ();
 
@@ -59,10 +74,12 @@ void init ()
 
 	Shader::initShaders ();
 
-	if (option[0] == 'f' || option[0] == 'F')
-		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window));
-	else if (option[0] == 's' || option[0] == 'S')
-		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window));
+	if (option[0] == 'f')
+		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, recursionDepth));
+	else if (option[0] == 's')
+		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window, recursionDepth));
+	else if (option[0] == 'm')
+		implementation = static_cast<Implementation*> (new ImplementationMixed (input, window, recursionDepth, cutoff));
 
 	window->hideCursor ();
 }
@@ -78,6 +95,8 @@ void mainLoop ()
 
 	long totalFrameTime = 0;
 	int frameCount = 0;
+
+	std::ofstream frameTimingFile ("frame_timings.csv");
 
 	while (running)
 	{
@@ -104,9 +123,12 @@ void mainLoop ()
 		{
 			lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
 			float avgFrameTime = totalFrameTime / frameCount;
+			float avgFrameTimeMs = avgFrameTime / 1000000;
 			totalFrameTime = 0;
 			frameCount = 0;
-			std::cout << "Avg. frame time: " << avgFrameTime / 1000000 << "ms (" << avgFrameTime << "ns)" << std::endl;
+			std::cout << "Avg. frame time: " << avgFrameTimeMs << "ms (" << avgFrameTime << "ns)" << std::endl;
+			
+			frameTimingFile << avgFrameTimeMs << ",";
 		}
 
 		if (window->shouldClose ())

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window) : Implementation (input, window)
+ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window, int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
 {
 }
 
@@ -19,7 +19,8 @@ void ImplementationStencilBuffer::render ()
 	glEnable (GL_STENCIL_TEST);
 	glClear (GL_STENCIL_BUFFER_BIT);
 
-	renderFromPerspective (this->camera->getViewMatrix ());
+	renderPortalView (this->camera->getViewMatrix (), portal1, portal2, level, maxRecursionDepth);
+	renderPortalView (this->camera->getViewMatrix (), portal2, portal1, level, maxRecursionDepth);
 }
 
 void ImplementationStencilBuffer::tick ()
@@ -27,18 +28,12 @@ void ImplementationStencilBuffer::tick ()
 	Implementation::tick ();
 }
 
-void ImplementationStencilBuffer::renderFromPerspective (glm::mat4 viewMatrix)
-{
-	renderPortalView (viewMatrix, portal1, portal2);
-	renderPortalView (viewMatrix, portal2, portal1);
-}
-
-void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal)
+void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level *level, int maxRecursionDepth)
 {
 	std::vector<glm::mat4> viewMatrices;
 	viewMatrices.push_back (viewMatrix);
 
-	for (int i = 1; i < MAX_RECURSION_DEPTH; i++)
+	for (int i = 1; i < maxRecursionDepth; i++)
 	{
 		viewMatrices.push_back (getNewCameraView (viewMatrices[i - 1], inPortal, outPortal));
 	}
@@ -46,7 +41,7 @@ void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
-	for (int i = 0; i < MAX_RECURSION_DEPTH; i++)
+	for (int i = 0; i < maxRecursionDepth; i++)
 	{
 		Shader::updateAllViewMatrices (viewMatrices[i]);
 

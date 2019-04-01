@@ -8,7 +8,7 @@
 
 #include "Shader.h"
 
-Implementation::Implementation (Input* input, Window* window)
+Implementation::Implementation (Input* input, Window* window, int maxRecursionDepth)
 {
 	this->window = window;
 	this->input = input;
@@ -37,11 +37,11 @@ Implementation::Implementation (Input* input, Window* window)
 
 	glm::vec3 portal2Position = glm::vec3 (0.5f, 0.0f, (2.5f - epsilon));
 	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
+
+	this->maxRecursionDepth = maxRecursionDepth;
 }
 
 const float Portal::PORTAL_SIZE = 0.5f;
-
-const int Implementation::MAX_RECURSION_DEPTH = 10;
 
 const glm::vec3 Portal::vertices[] = {
 	glm::vec3 (-Portal::PORTAL_SIZE / 2.0f, -Portal::PORTAL_SIZE / 2.0f, 0.0f),
