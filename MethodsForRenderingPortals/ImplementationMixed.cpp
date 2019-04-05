@@ -5,17 +5,18 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <iostream>
 
-ImplementationMixed::ImplementationMixed (Input* input, Window* window, int maxRecursionDepth, int cutoff) : Implementation(input, window, maxRecursionDepth)
+ImplementationMixed::ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff) : Implementation(input, window, maxRecursionDepth)
 {
 	this->cutoff = cutoff;
+	this->textureSize = textureSize;
 
 	for (int i = cutoff; i < maxRecursionDepth; i++)
 	{
-		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
 		this->portal1FrameBuffers.push_back (std::get<0> (portal1));
 		this->portal1Textures.push_back (std::get<1> (portal1));
 
-		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
 		this->portal2FrameBuffers.push_back (std::get<0> (portal2));
 		this->portal2Textures.push_back (std::get<1> (portal2));
 	}
@@ -31,11 +32,11 @@ ImplementationMixed::~ImplementationMixed ()
 }
 
 void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers,
-	Level* level, int maxRecursionDepth, int cutoff, Window* window)
+	Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window)
 {
 	glDisable (GL_STENCIL_TEST);
 
-	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, maxRecursionDepth, cutoff);
+	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
@@ -99,12 +100,12 @@ void ImplementationMixed::render ()
 
 	glClear (GL_STENCIL_BUFFER_BIT);
 
-	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
+	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
 
 	// Reusing framebuffers/textures seems like a good idea but actually seems to almost double the frame time (perhaps investigate if time)
 	// this->renderFromPerspective (this->camera, portal1, portal2, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
 
-	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
+	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
 }
 
 void ImplementationMixed::tick ()

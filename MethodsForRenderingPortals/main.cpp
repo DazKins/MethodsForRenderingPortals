@@ -62,6 +62,13 @@ void init ()
 		std::cin >> cutoff;
 	}
 
+	int textureSize = 0;
+	if (option[0] == 'f' || option[0] == 'm')
+	{
+		std::cout << "Enter texture size:" << std::endl;
+		std::cin >> textureSize;
+	}
+
 	glfwInit ();
 
 	window = new Window (INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
@@ -75,11 +82,11 @@ void init ()
 	Shader::initShaders ();
 
 	if (option[0] == 'f')
-		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, recursionDepth));
+		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, textureSize, recursionDepth));
 	else if (option[0] == 's')
 		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window, recursionDepth));
 	else if (option[0] == 'm')
-		implementation = static_cast<Implementation*> (new ImplementationMixed (input, window, recursionDepth, cutoff));
+		implementation = static_cast<Implementation*> (new ImplementationMixed (input, window, textureSize, recursionDepth, cutoff));
 
 	window->hideCursor ();
 }

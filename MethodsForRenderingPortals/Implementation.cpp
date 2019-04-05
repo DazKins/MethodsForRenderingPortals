@@ -18,7 +18,7 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 
 	this->level = new Level (5.0f, 1.0f, 5.0f);
 
-	glm::mat4 projectionMatrix = glm::perspective (45.0f, this->window->getAspectRatio (), 0.001f, 100.0f);
+	glm::mat4 projectionMatrix = glm::perspective (45.0f, this->window->getAspectRatio (), 0.001f, 1000.0f);
 	Shader::updateAllProjectionMatrices (projectionMatrix);
 	float epsilon = 0.05f;
 

@@ -9,7 +9,7 @@
 class ImplementationFramebufferObjects : public Implementation
 {
 public:
-	ImplementationFramebufferObjects (Input* input, Window* window, int maxRecursionDepth);
+	ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth);
 	~ImplementationFramebufferObjects ();
 
 	void render ();
@@ -22,17 +22,17 @@ private:
 	std::vector<unsigned int> portal2FrameBuffers;
 	std::vector<unsigned int> portal2Textures;
 
-	static std::tuple<unsigned int, unsigned int> createPortalFrameBuffer ();
+	unsigned int textureSize;
+
+	static std::tuple<unsigned int, unsigned int> createPortalFrameBuffer (int textureSize);
 
 	static glm::mat4 generateCustomProjection (glm::mat4 translationMatrix, Portal *inPortal, Portal *outPortal);
 
 	static void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
-		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth, int cutoff);
+		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff);
 
 	static void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
-		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth);
-
-	static const unsigned int portalTextureSize = 400;
+		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth);
 
 	friend class ImplementationMixed;
 };

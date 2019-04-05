@@ -11,21 +11,23 @@
 #include "Shader.h"
 #include "ModelLoader.h"
 
-ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window,  int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
+ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
 {
+	this->textureSize = textureSize;
+
 	for (int i = 0; i < maxRecursionDepth - 1; i++)
 	{
-		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
 		this->portal1FrameBuffers.push_back (std::get<0> (portal1));
 		this->portal1Textures.push_back (std::get<1> (portal1));
 
-		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer ();
+		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
 		this->portal2FrameBuffers.push_back (std::get<0> (portal2));
 		this->portal2Textures.push_back (std::get<1> (portal2));
 	}
 }
 
-std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createPortalFrameBuffer ()
+std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createPortalFrameBuffer (int textureSize)
 {
 	unsigned int fboId;
 	glGenFramebuffers (1, &fboId);
@@ -35,8 +37,7 @@ std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createP
 	glGenTextures (1, &textureId);
 	glBindTexture (GL_TEXTURE_2D, textureId);
 
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize,
-		0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -46,7 +47,7 @@ std::tuple<unsigned int, unsigned int> ImplementationFramebufferObjects::createP
 	unsigned int rbo;
 	glGenRenderbuffers (1, &rbo);
 	glBindRenderbuffer (GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
+	glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, textureSize, textureSize);
 	glBindRenderbuffer (GL_RENDERBUFFER, 0);
 
 	glFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
@@ -97,7 +98,7 @@ glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 
 }
 
 void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
-	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth, int cutoff)
+	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff)
 {
 	std::vector<glm::mat4> translationMatrices;
 	translationMatrices.push_back (translationMatrix);
@@ -118,7 +119,7 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 
 		Shader::updateAllProjectionMatrices (generateCustomProjection (translationMatrices[i - 1], inPortal, outPortal));
 
-		glViewport (0, 0, ImplementationFramebufferObjects::portalTextureSize, ImplementationFramebufferObjects::portalTextureSize);
+		glViewport (0, 0, textureSize, textureSize);
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		Shader::PORTAL_CLIP->bind ();
@@ -136,15 +137,15 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 }
 
 void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
-	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int maxRecursionDepth)
+	std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth)
 {
-	renderFromPortalPerspective (translationMatrix, inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, maxRecursionDepth, 0);
+	renderFromPortalPerspective (translationMatrix, inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, textureSize, maxRecursionDepth, 0);
 }
 
 void ImplementationFramebufferObjects::render ()
 {
-	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth);
-	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth);
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal1, portal2, portal1Textures, portal1FrameBuffers, level, textureSize, maxRecursionDepth);
+	this->renderFromPortalPerspective (this->camera->getTranslationMatrix (), portal2, portal1, portal2Textures, portal2FrameBuffers, level, textureSize, maxRecursionDepth);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
