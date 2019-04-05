@@ -42,7 +42,7 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 
 	Shader::updateAllViewMatrices (camera->getViewMatrix ());
 
-	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, window->getAspectRatio (), 0.1f, 100.0f));
+	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, window->getAspectRatio (), 0.001f, 100.0f));
 	glViewport (0, 0, window->getWidth (), window->getHeight ());
 
 	std::vector<glm::mat4> viewMatrices;

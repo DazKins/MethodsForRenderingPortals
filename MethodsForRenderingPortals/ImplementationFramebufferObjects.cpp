@@ -151,7 +151,7 @@ void ImplementationFramebufferObjects::render ()
 
 	Shader::updateAllViewMatrices (this->camera->getViewMatrix ());
 
-	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, this->window->getAspectRatio (), 0.1f, 100.0f));
+	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, this->window->getAspectRatio (), 0.001f, 1000.0f));
 	glViewport (0, 0, this->window->getWidth (), this->window->getHeight ());
 
 	Shader::DEFAULT->bind ();
