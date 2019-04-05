@@ -12,22 +12,18 @@ ImplementationMixed::ImplementationMixed (Input* input, Window* window, int text
 
 	for (int i = cutoff; i < maxRecursionDepth; i++)
 	{
-		auto portal1 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
-		this->portal1FrameBuffers.push_back (std::get<0> (portal1));
-		this->portal1Textures.push_back (std::get<1> (portal1));
-
 		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
-		this->portal2FrameBuffers.push_back (std::get<0> (portal2));
-		this->portal2Textures.push_back (std::get<1> (portal2));
+		this->portalFrameBuffers.push_back (std::get<0> (portal2));
+		this->portalTextures.push_back (std::get<1> (portal2));
 	}
 }
 
 ImplementationMixed::~ImplementationMixed ()
 {
-	for (unsigned int i : this->portal1FrameBuffers)
+	for (unsigned int i : this->portalFrameBuffers)
 		glDeleteFramebuffers (1, &i);
 
-	for (unsigned int i : this->portal2FrameBuffers)
+	for (unsigned int i : this->portalFrameBuffers)
 		glDeleteFramebuffers (1, &i);
 }
 
@@ -100,12 +96,10 @@ void ImplementationMixed::render ()
 
 	glClear (GL_STENCIL_BUFFER_BIT);
 
-	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
+	this->renderFromPerspective (this->camera, portal2, portal1, portalTextures, portalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
 
-	// Reusing framebuffers/textures seems like a good idea but actually seems to almost double the frame time (perhaps investigate if time)
-	// this->renderFromPerspective (this->camera, portal1, portal2, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
-
-	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
+	// Reusing framebuffers/textures seems like a good idea
+	this->renderFromPerspective (this->camera, portal1, portal2, portalTextures, portalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
 }
 
 void ImplementationMixed::tick ()

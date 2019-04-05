@@ -19,9 +19,6 @@ private:
 	static void renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers,
 		Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window);
 
-	std::vector<unsigned int> portal1FrameBuffers;
-	std::vector<unsigned int> portal1Textures;
-
-	std::vector<unsigned int> portal2FrameBuffers;
-	std::vector<unsigned int> portal2Textures;
+	std::vector<unsigned int> portalFrameBuffers;
+	std::vector<unsigned int> portalTextures;
 };
