@@ -56,7 +56,6 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
 	glEnable (GL_STENCIL_TEST);
-	glClear (GL_STENCIL_BUFFER_BIT);
 
 	for (int i = 0; i <= cutoff; i++)
 	{
@@ -85,17 +84,26 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 			glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
 			Shader::PORTAL_STENCIL_BUFFER->bind ();
 			inPortal->model->render ();
+			glClear (GL_DEPTH_BUFFER_BIT);
 		}
-		glClear (GL_DEPTH_BUFFER_BIT);
+
 		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
 	}
+
+	glBindTexture (GL_TEXTURE_2D, 0);
 }
 
 void ImplementationMixed::render ()
 {
 	Implementation::render ();
 
+	glClear (GL_STENCIL_BUFFER_BIT);
+
 	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
+
+	// Reusing framebuffers/textures seems like a good idea but actually seems to almost double the frame time (perhaps investigate if time)
+	// this->renderFromPerspective (this->camera, portal1, portal2, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
+
 	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
 }
 
