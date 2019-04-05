@@ -164,7 +164,6 @@ void VAO::render ()
 	if (!this->compiled)
 		this->compile ();
 
-
 	glBindVertexArray (this->vaoId);
 
 	glDrawElements (GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);

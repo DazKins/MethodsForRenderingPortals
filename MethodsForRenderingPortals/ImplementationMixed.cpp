@@ -33,6 +33,8 @@ ImplementationMixed::~ImplementationMixed ()
 void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers,
 	Level* level, int maxRecursionDepth, int cutoff, Window* window)
 {
+	glDisable (GL_STENCIL_TEST);
+
 	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, maxRecursionDepth, cutoff);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
@@ -53,6 +55,9 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
+	glEnable (GL_STENCIL_TEST);
+	glClear (GL_STENCIL_BUFFER_BIT);
+
 	for (int i = 0; i <= cutoff; i++)
 	{
 		Shader::updateAllViewMatrices (viewMatrices[i]);
@@ -70,7 +75,7 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 		Shader::updateAllModelMatrices (inPortal->toWorld);
 		if (i == cutoff)
 		{
-			glStencilFunc (GL_GEQUAL, i, 0xFF);
+			glStencilFunc (GL_EQUAL, i, 0xFF);
 			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);
 			inPortal->model->render ();
@@ -81,9 +86,8 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 			Shader::PORTAL_STENCIL_BUFFER->bind ();
 			inPortal->model->render ();
 		}
-		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
-
 		glClear (GL_DEPTH_BUFFER_BIT);
+		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
 	}
 }
 
@@ -91,13 +95,7 @@ void ImplementationMixed::render ()
 {
 	Implementation::render ();
 
-	glEnable (GL_STENCIL_TEST);
-	glClear (GL_STENCIL_BUFFER_BIT);
-
 	this->renderFromPerspective (this->camera, portal2, portal1, portal2Textures, portal2FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
-
-	glClear (GL_STENCIL_BUFFER_BIT);
-
 	this->renderFromPerspective (this->camera, portal1, portal2, portal1Textures, portal1FrameBuffers, level, maxRecursionDepth, cutoff, this->window);
 }
 
