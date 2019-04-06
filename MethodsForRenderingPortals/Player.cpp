@@ -19,8 +19,49 @@ Player::~Player () { }
 float rotationSpeed = 0.002f;
 float movementSpeed = 0.025f;
 
+void Player::moveForward ()
+{
+	float ry = this->rotation.y;
+	this->position += glm::vec3 (-movementSpeed * sin(ry), 0, -movementSpeed * cos(ry));
+}
+
+void Player::moveBackward ()
+{
+	float ry = this->rotation.y;
+	this->position += glm::vec3 (movementSpeed * sin(ry), 0, movementSpeed * cos(ry));
+}
+
+void Player::moveLeft ()
+{
+	float ry = this->rotation.y;
+	this->position += glm::vec3 (-movementSpeed * cos(ry), 0, movementSpeed * sin(ry));
+}
+
+void Player::moveRight ()
+{
+	float ry = this->rotation.y;
+	this->position += glm::vec3 (movementSpeed * cos(ry), 0, -movementSpeed * sin(ry));
+}
+
+void Player::moveUp ()
+{
+	this->position += glm::vec3 (0.0f, movementSpeed, 0.0f);
+}
+
+void Player::moveDown ()
+{
+	this->position += glm::vec3 (0.0f, -movementSpeed, 0.0f);
+}
+
+void Player::rotate (glm::vec2 rot)
+{
+	this->rotation.x -= rot.y * rotationSpeed;
+	this->rotation.y -= rot.x * rotationSpeed;
+}
+
 void Player::tick ()
 {
+
 	glm::vec3 lastFramePosition = this->position;
 
 	glm::vec2 midPoint = window->getMidPoint ();
@@ -28,25 +69,21 @@ void Player::tick ()
 
 	glm::vec2 dp = mousePosition - midPoint;
 
-	this->rotation.x -= dp.y * rotationSpeed;
-	this->rotation.y -= dp.x * rotationSpeed;
-
-	float sinY = sin (this->rotation.y);
-	float cosY = cos (this->rotation.y);
+	rotate (dp);
 
 	if (this->input->isKeyDown (GLFW_KEY_W))
-		this->position += glm::vec3 (-movementSpeed * sinY, 0, -movementSpeed * cosY);
+		moveForward ();
 	if (this->input->isKeyDown (GLFW_KEY_A))
-		this->position += glm::vec3 (-movementSpeed * cosY, 0, movementSpeed * sinY);
+		moveLeft ();
 	if (this->input->isKeyDown (GLFW_KEY_S))
-		this->position += glm::vec3 (movementSpeed * sinY, 0, movementSpeed * cosY);
+		moveBackward ();
 	if (this->input->isKeyDown (GLFW_KEY_D))
-		this->position += glm::vec3 (movementSpeed * cosY, 0, -movementSpeed * sinY);
+		moveRight ();
 
 	if (this->input->isKeyDown (GLFW_KEY_SPACE))
-		this->position += glm::vec3 (0.0f, movementSpeed, 0.0f);
+		moveUp ();
 	if (this->input->isKeyDown (GLFW_KEY_LEFT_CONTROL))
-		this->position += glm::vec3 (0.0f, -movementSpeed, 0.0f);
+		moveDown ();
 
 	window->setCursorPosition (window->getMidPoint ());
 
@@ -81,7 +118,9 @@ void Player::handlePortalWalkthrough (Portal *inPortal, Portal *outPortal, glm::
 		float A3 = 0.5f * glm::length (glm::cross ((inPortalVertices[3] - collisionPos), (inPortalVertices[0] - collisionPos)));
 		float TA = A0 + A1 + A2 + A3;
 
-		if (TA <= Portal::PORTAL_SIZE * Portal::PORTAL_SIZE)
+		float epsilon = 0.001f;
+
+		if (TA <= Portal::PORTAL_SIZE * Portal::PORTAL_SIZE + epsilon)
 		{
 			static glm::mat4 rot180 = glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 

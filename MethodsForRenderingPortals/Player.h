@@ -25,6 +25,15 @@ public:
 	Player (Input* input, Window* window, Camera* camera, Implementation* implementation);
 	~Player ();
 
+	void moveForward ();
+	void moveBackward ();
+	void moveLeft ();
+	void moveRight ();
+	void moveUp ();
+	void moveDown ();
+
+	void rotate (glm::vec2 rot);
+
 	void tick ();
 };
 

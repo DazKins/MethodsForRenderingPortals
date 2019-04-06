@@ -22,9 +22,6 @@ ImplementationMixed::~ImplementationMixed ()
 {
 	for (unsigned int i : this->portalFrameBuffers)
 		glDeleteFramebuffers (1, &i);
-
-	for (unsigned int i : this->portalFrameBuffers)
-		glDeleteFramebuffers (1, &i);
 }
 
 void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers,
@@ -71,20 +68,17 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 		Shader::updateAllModelMatrices (inPortal->toWorld);
 		if (i == cutoff)
 		{
-			glStencilFunc (GL_EQUAL, i, 0xFF);
-			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);
-			inPortal->model->render ();
+			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 		}
 		else
 		{
 			glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
 			Shader::PORTAL_STENCIL_BUFFER->bind ();
-			inPortal->model->render ();
-			glClear (GL_DEPTH_BUFFER_BIT);
 		}
-
+		inPortal->model->render ();
 		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+		glClear (GL_DEPTH_BUFFER_BIT);
 	}
 
 	glBindTexture (GL_TEXTURE_2D, 0);
