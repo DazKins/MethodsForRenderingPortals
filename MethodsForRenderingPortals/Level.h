@@ -3,7 +3,7 @@
 #include "VAO.h"
 #include "Texture.h"
 
-constexpr auto SCENE = 3;
+extern unsigned int SCENE;
 
 class Level
 {

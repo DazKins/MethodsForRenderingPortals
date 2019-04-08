@@ -6,6 +6,8 @@
 #include "Shader.h"
 #include "ModelLoader.h"
 
+unsigned int SCENE = 0;
+
 Level::Level (float xSize, float ySize, float zSize)
 {
 	float x2 = xSize / 2.0f;

@@ -12,6 +12,7 @@
 #include "ImplementationFramebufferObjects.h"
 #include "ImplementationMixed.h"
 #include "Shader.h"
+#include "Level.h"
 
 const int INITIAL_WINDOW_WIDTH = 1280;
 const int INITIAL_WINDOW_HEIGHT = 720;
@@ -45,6 +46,12 @@ void render ()
 void init ()
 {
 	std::string option;
+
+	do
+	{
+		std::cout << "Choose scene: " << std::endl;
+		std::cin >> SCENE;
+	} while (SCENE > 3 || SCENE == 0);
 
 	do
 	{
