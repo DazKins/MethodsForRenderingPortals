@@ -65,6 +65,10 @@ void AutomaticCamera::tick ()
 			currentStepCounter++;
 		}
 	}
+	else
+	{
+		exit (0);
+	}
 
 	glm::vec3 thisFramePosition = this->position;
 
