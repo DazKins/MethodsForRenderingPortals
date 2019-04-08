@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <string>
 
 #include "Window.h"
 #include "Input.h"
@@ -44,6 +45,20 @@ void render ()
 void init ()
 {
 	std::string option;
+
+	do
+	{
+		std::cout << "Choose Camera: " << std::endl << "m : manual" << std::endl << "a : automatic" << std::endl;
+		std::cin >> option;
+		std::transform (option.begin (), option.end (), option.begin (), ::tolower);
+	} while (option[0] != 'a' && option[0] != 'm');
+
+	bool manualCamera = false;
+	if (option[0] != 'm')
+	{
+		manualCamera = true;
+	}
+
 	do
 	{
 		std::cout << "Choose Implementation:" << std::endl << "s : stencil buffers" << std::endl << "f : framebuffer objects" << std::endl << "m : mixed" << std::endl;  
@@ -82,11 +97,11 @@ void init ()
 	Shader::initShaders ();
 
 	if (option[0] == 'f')
-		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, textureSize, recursionDepth));
+		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, textureSize, recursionDepth, manualCamera));
 	else if (option[0] == 's')
-		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window, recursionDepth));
+		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window, recursionDepth, manualCamera));
 	else if (option[0] == 'm')
-		implementation = static_cast<Implementation*> (new ImplementationMixed (input, window, textureSize, recursionDepth, cutoff));
+		implementation = static_cast<Implementation*> (new ImplementationMixed (input, window, textureSize, recursionDepth, cutoff, manualCamera));
 
 	window->hideCursor ();
 }
@@ -97,7 +112,7 @@ void mainLoop ()
 	float nsPerTick = 1000000000.0f / 60.0f;
 	auto lastTime = std::chrono::high_resolution_clock::now ();
 
-	int secondsPerDebugOutput = 1;
+	float secondsPerDebugOutput = 0.5;
 	auto lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
 
 	long totalFrameTime = 0;

@@ -4,8 +4,6 @@
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Implementation.h"
-
 Player::Player (Input* input, Window* window, Camera* camera, Implementation* implementation)
 {
 	this->input = input;
@@ -61,7 +59,6 @@ void Player::rotate (glm::vec2 rot)
 
 void Player::tick ()
 {
-
 	glm::vec3 lastFramePosition = this->position;
 
 	glm::vec2 midPoint = window->getMidPoint ();
@@ -107,10 +104,7 @@ void Player::handlePortalWalkthrough (Portal *inPortal, Portal *outPortal, glm::
 	{
 		glm::vec3 collisionPos = lambda * d + mu;
 
-		glm::vec3 inPortalVertices[4];
-
-		for (int i = 0; i < 4; i++)
-			inPortalVertices[i] = inPortal->toWorld * glm::vec4 (Portal::vertices[i], 1.0f);
+		glm::vec3 * inPortalVertices = inPortal->getWorldVertices();
 
 		float A0 = 0.5f * glm::length (glm::cross ((inPortalVertices[0] - collisionPos), (inPortalVertices[1] - collisionPos)));
 		float A1 = 0.5f * glm::length (glm::cross ((inPortalVertices[1] - collisionPos), (inPortalVertices[2] - collisionPos)));
@@ -124,14 +118,14 @@ void Player::handlePortalWalkthrough (Portal *inPortal, Portal *outPortal, glm::
 		{
 			static glm::mat4 rot180 = glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 
-			glm::vec3 newPos = outPortal->toWorld * rot180 * glm::inverse (inPortal->toWorld) * glm::vec4 (thisFramePosition, 1.0f);
+			glm::vec3 newPos = outPortal->getToWorld () * rot180 * inPortal->getInvToWorld () * glm::vec4 (thisFramePosition, 1.0f);
 
 			position = newPos;
 
 			glm::vec3 rotationAxis = glm::cross (inPortal->getNormal (), outPortal->getNormal ());
 			float rotation = glm::dot (inPortal->getNormal (), outPortal->getNormal ());
 
-			glm::mat4 piToPo = outPortal->toWorld * rot180 * glm::inverse (inPortal->toWorld);
+			glm::mat4 piToPo = outPortal->getToWorld () * rot180 * inPortal->getInvToWorld ();
 
 			this->rotation.x -= atan2f (piToPo[2][1], piToPo[2][2]);
 			this->rotation.y -= atan2f (-piToPo[2][0], sqrt (piToPo[2][1] * piToPo[2][1] + piToPo[2][2] * piToPo[2][2]));

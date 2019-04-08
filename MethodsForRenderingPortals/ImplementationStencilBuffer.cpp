@@ -6,7 +6,8 @@
 #include <iostream>
 #include <vector>
 
-ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window, int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
+ImplementationStencilBuffer::ImplementationStencilBuffer (Input *input, Window *window, int maxRecursionDepth, bool manualCamera) 
+	: Implementation (input, window, maxRecursionDepth, manualCamera)
 {
 }
 
@@ -57,7 +58,7 @@ void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
 
-		Shader::updateAllModelMatrices (inPortal->toWorld);
+		Shader::updateAllModelMatrices (inPortal->getToWorld ());
 		Shader::PORTAL_STENCIL_BUFFER->bind ();
 		inPortal->model->render ();
 		Shader::updateAllModelMatrices (glm::mat4 (1.0f));

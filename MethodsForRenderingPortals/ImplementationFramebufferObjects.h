@@ -9,7 +9,7 @@
 class ImplementationFramebufferObjects : public Implementation
 {
 public:
-	ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth);
+	ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth, bool manualCamera);
 	~ImplementationFramebufferObjects ();
 
 	void render ();
@@ -26,7 +26,7 @@ private:
 
 	static std::tuple<unsigned int, unsigned int> createPortalFrameBuffer (int textureSize);
 
-	static glm::mat4 generateCustomProjection (glm::mat4 translationMatrix, Portal *inPortal, Portal *outPortal);
+	static glm::mat4 generateCustomProjection (glm::mat4 oldViewMatrix, glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal);
 
 	static void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal *outPortal,
 		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff);

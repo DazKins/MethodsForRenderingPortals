@@ -3,27 +3,39 @@
 #include "Input.h"
 #include "Window.h"
 #include "Camera.h"
-#include "Player.h"
 #include "Level.h"
+
+class Player;
 
 struct Portal
 {
+public:
 	static const float PORTAL_SIZE;
 	static const glm::vec3 vertices[];
 	static const glm::vec3 normal;
+	
+	void setToWorld (glm::mat4 toWorld);
+	glm::mat4 getToWorld ();
+	glm::mat4 getInvToWorld ();
 
-	glm::mat4 toWorld;
+	glm::vec3* getWorldVertices ();
+
 	VAO *model;
 	void generatePortalMesh ();
 
 	glm::vec3 getPosition ();
 	glm::vec3 getNormal ();
+private:
+	glm::mat4 toWorld;
+	glm::mat4 invToWorld;
+
+	glm::vec3 worldVertices[4];
 };
 
 class Implementation
 {
 public:
-	Implementation (Input* input, Window* window, int maxRecursionDepth);
+	Implementation (Input* input, Window* window, int maxRecursionDepth, bool manualCamera);
 	~Implementation ();
 
 	virtual void tick ();

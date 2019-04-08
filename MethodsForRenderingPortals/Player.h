@@ -4,6 +4,7 @@
 
 #include "Input.h"
 #include "Camera.h"
+#include "Implementation.h"
 
 class Implementation;
 struct Portal;
@@ -34,6 +35,8 @@ public:
 
 	void rotate (glm::vec2 rot);
 
-	void tick ();
+	virtual void tick ();
+
+	friend class AutomaticCamera;
 };
 

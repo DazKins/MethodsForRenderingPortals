@@ -15,7 +15,8 @@ out vec2 texCoord;
 void loadAttributes()
 {
     position = position_attribute;
-    normal = normal_attribute;
+    // normal = vec3 (inverse (transpose (modelMatrix)) * vec4 (normal_attribute, 1.0f));
+    normal = normalize (inverse (transpose (mat3 (modelMatrix))) * normal_attribute);
     texCoord = texCoord_attribute;
 }
 

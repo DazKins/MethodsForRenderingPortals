@@ -86,5 +86,7 @@ VAO* loadObj (std::string path)
 		}
 	}
 
+	file.close ();
+
 	return vao;
 }

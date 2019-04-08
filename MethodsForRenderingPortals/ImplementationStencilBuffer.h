@@ -7,7 +7,7 @@
 class ImplementationStencilBuffer : public Implementation
 {
 public:
-	ImplementationStencilBuffer (Input* input, Window* window, int maxRecursionDepth);
+	ImplementationStencilBuffer (Input* input, Window* window, int maxRecursionDepth, bool manualCamera);
 	~ImplementationStencilBuffer ();
 
 	void render ();

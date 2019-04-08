@@ -7,14 +7,20 @@
 #include <iostream>
 
 #include "Shader.h"
+#include "AutomaticCamera.h"
+#include "Player.h"
 
-Implementation::Implementation (Input* input, Window* window, int maxRecursionDepth)
+Implementation::Implementation (Input* input, Window* window, int maxRecursionDepth, bool manualCamera)
 {
 	this->window = window;
 	this->input = input;
 
 	this->camera = new Camera (this->window);
-	this->player = new Player (this->input, this->window, this->camera, this);
+
+	if (manualCamera)
+		this->player = new AutomaticCamera (window, camera, this);
+	else
+		this->player = new Player (this->input, this->window, this->camera, this);
 
 	this->level = new Level (5.0f, 1.0f, 5.0f);
 
@@ -27,16 +33,21 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 
 	this->portal1->generatePortalMesh ();
 	this->portal2->generatePortalMesh ();
-
+	  
 	glm::vec3 portal1Position = glm::vec3 (0.0f, 0.0f, -(2.5f - epsilon));
-	this->portal1->toWorld = glm::translate (glm::mat4 (1.0f), portal1Position);
+	this->portal1->setToWorld (glm::translate (glm::mat4 (1.0f), portal1Position));
 
-	//glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
-	//this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
-	//	* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
-
-	glm::vec3 portal2Position = glm::vec3 (0.0f, 0.0f, (2.5f - epsilon));
-	this->portal2->toWorld = glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
+	if (SCENE == 3)
+	{
+		glm::vec3 portal2Position = glm::vec3 (-2.0f, 0.0f, 2.0f);
+		this->portal2->setToWorld (glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f))
+			* glm::rotate (glm::mat4 (1.0f), glm::radians (-45.0f), glm::vec3 (0.0f, 1.0f, 0.0f)));
+	}
+	else
+	{
+		glm::vec3 portal2Position = glm::vec3 (0.0f, 0.0f, (2.5f - epsilon));
+		this->portal2->setToWorld (glm::translate (glm::mat4 (1.0f), portal2Position) * glm::rotate (glm::mat4 (1.0f), glm::radians (180.0f), glm::vec3 (0.0f, 1.0f, 0.0f)));
+	}
 
 	this->maxRecursionDepth = maxRecursionDepth;
 }
@@ -51,6 +62,30 @@ const glm::vec3 Portal::vertices[] = {
 };
 
 const glm::vec3 Portal::normal = glm::vec3 (0.0f, 0.0f, 1.0f);
+
+void Portal::setToWorld (glm::mat4 toWorld)
+{
+	this->toWorld = toWorld;
+	this->invToWorld = glm::inverse (toWorld);
+
+	for (int i = 0; i < 4; i++)
+		this->worldVertices[i] = toWorld * glm::vec4(Portal::vertices[i], 1.0f);
+}
+
+glm::mat4 Portal::getToWorld ()
+{
+	return this->toWorld;
+}
+
+glm::mat4 Portal::getInvToWorld ()
+{
+	return this->invToWorld;
+}
+
+glm::vec3 * Portal::getWorldVertices ()
+{
+	return worldVertices;
+}
 
 void Portal::generatePortalMesh ()
 {
@@ -94,7 +129,7 @@ Portal *Implementation::getPortal2 () const
 glm::mat4 Implementation::getNewCameraView (glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal)
 {
 	static glm::mat4 rot180 = glm::rotate (glm::mat4 (1.0), glm::radians (180.0f), glm::vec3 (0.0, 1.0, 0.0));
-	return currentViewMatrix * inPortal->toWorld * rot180 * glm::inverse (outPortal->toWorld);
+	return currentViewMatrix * inPortal->getToWorld () * rot180 * outPortal->getInvToWorld ();
 }
 
 void Implementation::tick ()

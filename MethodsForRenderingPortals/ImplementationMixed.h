@@ -6,7 +6,7 @@
 class ImplementationMixed : public Implementation
 {
 public:
-	ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff);
+	ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff, bool manualCamera);
 	~ImplementationMixed ();
 
 	void render ();

@@ -5,16 +5,17 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <iostream>
 
-ImplementationMixed::ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff) : Implementation(input, window, maxRecursionDepth)
+ImplementationMixed::ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff, bool manualCamera)
+	: Implementation(input, window, maxRecursionDepth, manualCamera)
 {
 	this->cutoff = cutoff;
 	this->textureSize = textureSize;
 
-	for (int i = cutoff; i < maxRecursionDepth; i++)
+	for (int i = cutoff; i < maxRecursionDepth * 2; i++)
 	{
-		auto portal2 = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
-		this->portalFrameBuffers.push_back (std::get<0> (portal2));
-		this->portalTextures.push_back (std::get<1> (portal2));
+		auto portal = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
+		this->portalFrameBuffers.push_back (std::get<0> (portal));
+		this->portalTextures.push_back (std::get<1> (portal));
 	}
 }
 
@@ -41,7 +42,7 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 	std::vector<glm::mat4> viewMatrices;
 	viewMatrices.push_back (camera->getViewMatrix ());
 
-	for (int i = 1; i < maxRecursionDepth; i++)
+	for (int i = 1; i <= cutoff; i++)
 	{
 		viewMatrices.push_back (getNewCameraView (viewMatrices[i - 1], inPortal, outPortal));
 	}
@@ -65,7 +66,7 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 
 		level->render ();
 
-		Shader::updateAllModelMatrices (inPortal->toWorld);
+		Shader::updateAllModelMatrices (inPortal->getToWorld ());
 		if (i == cutoff)
 		{
 			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);

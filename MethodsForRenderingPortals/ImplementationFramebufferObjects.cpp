@@ -11,7 +11,8 @@
 #include "Shader.h"
 #include "ModelLoader.h"
 
-ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth) : Implementation (input, window, maxRecursionDepth)
+ImplementationFramebufferObjects::ImplementationFramebufferObjects (Input* input, Window* window, int textureSize, int maxRecursionDepth, bool manualCamera) 
+	: Implementation (input, window, maxRecursionDepth, manualCamera)
 {
 	this->textureSize = textureSize;
 
@@ -69,28 +70,26 @@ ImplementationFramebufferObjects::~ImplementationFramebufferObjects ()
 		glDeleteFramebuffers (1, &i);
 }
 
-glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 translationMatrix, Portal *inPortal, Portal *outPortal)
+glm::mat4 ImplementationFramebufferObjects::generateCustomProjection (glm::mat4 oldViewMatrix, glm::mat4 currentViewMatrix, Portal *inPortal, Portal *outPortal)
 {
-	glm::mat4 viewMatrix = getNewCameraView (translationMatrix, inPortal, outPortal);
-	Shader::updateAllViewMatrices (viewMatrix);
+	glm::vec3* outWorldVertices = outPortal->getWorldVertices ();
 
-	glm::mat4 viewModel = viewMatrix * outPortal->toWorld;
+	glm::vec3 TL = currentViewMatrix * glm::vec4 (outWorldVertices[1], 1.0f);
+	glm::vec3 BR = currentViewMatrix * glm::vec4 (outWorldVertices[3], 1.0f);
 
-	glm::vec3 TL = viewModel * glm::vec4 (Portal::vertices[1], 1.0f);
-	glm::vec3 BR = viewModel * glm::vec4 (Portal::vertices[3], 1.0f);
-
-	glm::mat4 rotation = glm::inverse (glm::mat3 (inPortal->toWorld));
+	glm::mat4 rotation = glm::mat3 (inPortal->getInvToWorld ()) * glm::mat3 (glm::inverse (oldViewMatrix));
 
 	TL = rotation * glm::vec4 (TL, 1.0f);
 	BR = rotation * glm::vec4 (BR, 1.0f);
 
-	float common_z = abs (TL.z);
-	float near_z = 0.1f;
+	float common_z = abs (BR.z);
+	static float near_z = 0.1f;
+	float ratio = near_z / common_z;
 
-	float left = TL.x / common_z * near_z;
-	float right = BR.x / common_z * near_z;
-	float bottom = BR.y / common_z * near_z;
-	float top = TL.y / common_z * near_z;
+	float left = TL.x * ratio;
+	float right = BR.x * ratio;
+	float bottom = BR.y * ratio;
+	float top = TL.y * ratio;
 
 	glm::mat4 frustumProjection = glm::frustum (right, left, bottom, top, near_z, 100.0f);
 
@@ -111,23 +110,22 @@ void ImplementationFramebufferObjects::renderFromPortalPerspective (glm::mat4 tr
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
+	glViewport (0, 0, textureSize, textureSize);
+
 	for (int i = maxRecursionDepth - 1; i > cutoff; i--)
 	{
 		glBindFramebuffer (GL_FRAMEBUFFER, inPortalFrameBuffers[i - 1 - cutoff]);
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		Shader::updateAllViewMatrices (translationMatrices[i]);
-
-		Shader::updateAllProjectionMatrices (generateCustomProjection (translationMatrices[i - 1], inPortal, outPortal));
-
-		glViewport (0, 0, textureSize, textureSize);
-		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Shader::updateAllProjectionMatrices (generateCustomProjection (translationMatrices[i - 1], translationMatrices[i], inPortal, outPortal));
 
 		Shader::PORTAL_CLIP->bind ();
 		level->render ();
 
 		if (i < maxRecursionDepth - 1)
 		{
-			Shader::updateAllModelMatrices (inPortal->toWorld);
+			Shader::updateAllModelMatrices (inPortal->getToWorld ());
 			glBindTexture (GL_TEXTURE_2D, inPortalTextures[i - cutoff]);
 			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 			inPortal->model->render ();
@@ -157,12 +155,12 @@ void ImplementationFramebufferObjects::render ()
 	Shader::DEFAULT->bind ();
 	level->render ();
 
-	Shader::updateAllModelMatrices (portal1->toWorld);
+	Shader::updateAllModelMatrices (portal1->getToWorld ());
 	glBindTexture (GL_TEXTURE_2D, this->portal1Textures[0]);
 	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 	portal1->model->render ();
 
-	Shader::updateAllModelMatrices (portal2->toWorld);
+	Shader::updateAllModelMatrices (portal2->getToWorld ());
 	glBindTexture (GL_TEXTURE_2D, this->portal2Textures[0]);
 	Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
 	portal2->model->render ();
