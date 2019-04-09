@@ -16,11 +16,8 @@ public:
 	void tick ();
 
 private:
-	std::vector<unsigned int> portal1FrameBuffers;
-	std::vector<unsigned int> portal1Textures;
-
-	std::vector<unsigned int> portal2FrameBuffers;
-	std::vector<unsigned int> portal2Textures;
+	unsigned int * portalFrameBuffers;
+	unsigned int* portalTextures;
 
 	unsigned int textureSize;
 
@@ -29,12 +26,12 @@ private:
 	static glm::mat4 generateCustomProjection (glm::mat4 oldViewMatrix, glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal);
 
 	static void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal* outPortal,
-		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff,
-		std::vector<glm::mat4> viewOperators);
+		unsigned int * inPortalTextures, unsigned int* inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff,
+		glm::mat4 * viewOperators);
 
 	static void renderFromPortalPerspective (glm::mat4 translationMatrix, Portal* inPortal, Portal* outPortal,
-		std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth,
-		std::vector<glm::mat4> viewOperators);
+		unsigned int* inPortalTextures, unsigned int* inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth,
+		glm::mat4* viewOperators);
 
 	friend class ImplementationMixed;
 };

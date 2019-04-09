@@ -29,14 +29,17 @@ void ImplementationStencilBuffer::tick ()
 	Implementation::tick ();
 }
 
-void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level *level, int maxRecursionDepth, std::vector<glm::mat4> viewOperators)
+void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level *level, int maxRecursionDepth, glm::mat4* viewOperators)
 {
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
 
 	for (int i = 0; i < maxRecursionDepth; i++)
 	{
-		Shader::updateAllViewMatrices (viewMatrix * viewOperators[i]);
+		if (i == 0)
+			Shader::updateAllViewMatrices (viewMatrix);
+		else
+			Shader::updateAllViewMatrices (viewMatrix * viewOperators[i]);
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilFunc (GL_EQUAL, i, 0xFF);

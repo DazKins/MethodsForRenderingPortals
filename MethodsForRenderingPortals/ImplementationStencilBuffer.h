@@ -16,6 +16,6 @@ public:
 	void tick ();
 
 private:
-	static void renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level* level, int maxRecursionDepth, std::vector<glm::mat4> viewOperators);
+	static void renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level* level, int maxRecursionDepth, glm::mat4* viewOperators);
 };
 

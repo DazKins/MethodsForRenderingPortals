@@ -11,22 +11,25 @@ ImplementationMixed::ImplementationMixed (Input* input, Window* window, int text
 	this->cutoff = cutoff;
 	this->textureSize = textureSize;
 
-	for (int i = cutoff; i < maxRecursionDepth * 2; i++)
+	this->portalFrameBuffers = (unsigned int*)malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
+	this->portalTextures = (unsigned int*)malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
+
+	for (int i = cutoff; i < maxRecursionDepth; i++)
 	{
 		auto portal = ImplementationFramebufferObjects::createPortalFrameBuffer (textureSize);
-		this->portalFrameBuffers.push_back (std::get<0> (portal));
-		this->portalTextures.push_back (std::get<1> (portal));
+		this->portalFrameBuffers[i - cutoff] = std::get<0> (portal);
+		this->portalTextures[i - cutoff] = std::get<1> (portal);
 	}
 }
 
 ImplementationMixed::~ImplementationMixed ()
 {
-	for (unsigned int i : this->portalFrameBuffers)
-		glDeleteFramebuffers (1, &i);
+	//for (unsigned int i : this->portalFrameBuffers)
+	//	glDeleteFramebuffers (1, &i);
 }
 
-void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, 
-	std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, std::vector<glm::mat4> viewOperators)
+void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, unsigned int* inPortalTextures,
+	unsigned int* inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, glm::mat4* viewOperators)
 {
 	glDisable (GL_STENCIL_TEST);
 
@@ -45,7 +48,10 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 
 	for (int i = 0; i <= cutoff; i++)
 	{
-		Shader::updateAllViewMatrices (camera->getViewMatrix() * viewOperators[i]);
+		if (i == 0)
+			Shader::updateAllViewMatrices (camera->getViewMatrix ());
+		else
+			Shader::updateAllViewMatrices (camera->getViewMatrix() * viewOperators[i]);
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilFunc (GL_EQUAL, i, 0xFF);

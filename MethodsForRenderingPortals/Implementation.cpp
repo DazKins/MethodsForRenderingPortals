@@ -51,13 +51,16 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 
 	this->maxRecursionDepth = maxRecursionDepth;
 
-	portal1ViewOperators.push_back (glm::mat4 (1.0f));
-	portal2ViewOperators.push_back (glm::mat4 (1.0f));
+	portal1ViewOperators = (glm::mat4*) malloc (sizeof (glm::mat4) * this->maxRecursionDepth);
+	portal2ViewOperators = (glm::mat4*) malloc (sizeof (glm::mat4) * this->maxRecursionDepth);
+
+	portal1ViewOperators[0] = glm::mat4 (1.0f);
+	portal2ViewOperators[0] = glm::mat4 (1.0f);
 
 	for (int i = 1; i < maxRecursionDepth; i++)
 	{
-		portal1ViewOperators.push_back (portal1ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal1, portal2));
-		portal2ViewOperators.push_back (portal2ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal2, portal1));
+		portal1ViewOperators[i] = portal1ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal1, portal2);
+		portal2ViewOperators[i] = portal2ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal2, portal1);
 	}
 }
 

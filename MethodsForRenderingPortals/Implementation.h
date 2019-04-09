@@ -59,6 +59,6 @@ protected:
 
 	int maxRecursionDepth;
 
-	std::vector<glm::mat4> portal1ViewOperators;
-	std::vector<glm::mat4> portal2ViewOperators;
+	glm::mat4 * portal1ViewOperators;
+	glm::mat4 * portal2ViewOperators;
 };
