@@ -4,6 +4,8 @@
 #include "Shader.h"
 #include "Implementation.h"
 
+#include <vector>
+
 class ImplementationStencilBuffer : public Implementation
 {
 public:
@@ -14,6 +16,6 @@ public:
 	void tick ();
 
 private:
-	static void renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level* level, int maxRecursionDepth);
+	static void renderPortalView (glm::mat4 viewMatrix, Portal *inPortal, Portal *outPortal, Level* level, int maxRecursionDepth, std::vector<glm::mat4> viewOperators);
 };
 

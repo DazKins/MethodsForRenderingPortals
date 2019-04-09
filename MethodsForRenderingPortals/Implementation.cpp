@@ -50,6 +50,15 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 	}
 
 	this->maxRecursionDepth = maxRecursionDepth;
+
+	portal1ViewOperators.push_back (glm::mat4 (1.0f));
+	portal2ViewOperators.push_back (glm::mat4 (1.0f));
+
+	for (int i = 1; i < maxRecursionDepth; i++)
+	{
+		portal1ViewOperators.push_back (portal1ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal1, portal2));
+		portal2ViewOperators.push_back (portal2ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal2, portal1));
+	}
 }
 
 const float Portal::PORTAL_SIZE = 0.5f;
@@ -130,6 +139,12 @@ glm::mat4 Implementation::getNewCameraView (glm::mat4 currentViewMatrix, Portal*
 {
 	static glm::mat4 rot180 = glm::rotate (glm::mat4 (1.0), glm::radians (180.0f), glm::vec3 (0.0, 1.0, 0.0));
 	return currentViewMatrix * inPortal->getToWorld () * rot180 * outPortal->getInvToWorld ();
+}
+
+glm::mat4 Implementation::getOldCameraView (glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal)
+{
+	static glm::mat4 rot180 = glm::rotate (glm::mat4 (1.0), glm::radians (180.0f), glm::vec3 (0.0, 1.0, 0.0));
+	return outPortal->getToWorld() * rot180 * inPortal->getInvToWorld() * glm::inverse (currentViewMatrix);
 }
 
 void Implementation::tick ()

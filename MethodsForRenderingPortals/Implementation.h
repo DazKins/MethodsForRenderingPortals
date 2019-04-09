@@ -42,6 +42,7 @@ public:
 	virtual void render ();
 
 	static glm::mat4 getNewCameraView (glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal);
+	static glm::mat4 getOldCameraView (glm::mat4 currentViewMatrix, Portal* inPortal, Portal* outPortal);
 
 	Portal* getPortal1 () const;
 	Portal* getPortal2 () const;
@@ -57,4 +58,7 @@ protected:
 	Portal *portal2;
 
 	int maxRecursionDepth;
+
+	std::vector<glm::mat4> portal1ViewOperators;
+	std::vector<glm::mat4> portal2ViewOperators;
 };

@@ -25,27 +25,18 @@ ImplementationMixed::~ImplementationMixed ()
 		glDeleteFramebuffers (1, &i);
 }
 
-void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, std::vector<unsigned int> inPortalFrameBuffers,
-	Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window)
+void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, std::vector<unsigned int> inPortalTextures, 
+	std::vector<unsigned int> inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, std::vector<glm::mat4> viewOperators)
 {
 	glDisable (GL_STENCIL_TEST);
 
-	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures, inPortalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff);
+	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures,
+		inPortalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, viewOperators);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 
-	Shader::updateAllViewMatrices (camera->getViewMatrix ());
-
 	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, window->getAspectRatio (), 0.001f, 100.0f));
 	glViewport (0, 0, window->getWidth (), window->getHeight ());
-
-	std::vector<glm::mat4> viewMatrices;
-	viewMatrices.push_back (camera->getViewMatrix ());
-
-	for (int i = 1; i <= cutoff; i++)
-	{
-		viewMatrices.push_back (getNewCameraView (viewMatrices[i - 1], inPortal, outPortal));
-	}
 
 	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
 	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
@@ -54,7 +45,7 @@ void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPorta
 
 	for (int i = 0; i <= cutoff; i++)
 	{
-		Shader::updateAllViewMatrices (viewMatrices[i]);
+		Shader::updateAllViewMatrices (camera->getViewMatrix() * viewOperators[i]);
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilFunc (GL_EQUAL, i, 0xFF);
@@ -91,10 +82,12 @@ void ImplementationMixed::render ()
 
 	glClear (GL_STENCIL_BUFFER_BIT);
 
-	this->renderFromPerspective (this->camera, portal2, portal1, portalTextures, portalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
+	this->renderFromPerspective (camera, portal2, portal1, portalTextures, portalFrameBuffers, level, textureSize,
+		maxRecursionDepth, cutoff, window, portal2ViewOperators);
 
 	// Reusing framebuffers/textures seems like a good idea
-	this->renderFromPerspective (this->camera, portal1, portal2, portalTextures, portalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, this->window);
+	this->renderFromPerspective (camera, portal1, portal2, portalTextures, portalFrameBuffers, level, textureSize,
+		maxRecursionDepth, cutoff, window, portal1ViewOperators);
 }
 
 void ImplementationMixed::tick ()
