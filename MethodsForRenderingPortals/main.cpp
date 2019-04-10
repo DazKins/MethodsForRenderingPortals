@@ -56,7 +56,7 @@ void init ()
 	{
 		std::cout << "Choose scene: " << std::endl;
 		std::cin >> SCENE;
-		fileEnding += SCENE + ",";
+		fileEnding += std::to_string (SCENE) + ",";
 	} while (SCENE > 3 || SCENE == 0);
 
 	do
@@ -162,7 +162,7 @@ void mainLoop ()
 
 		if ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now ().time_since_epoch () - lastDebugOutput)).count() >= secondsPerDebugOutput * 1000)
 		{
-			lastDebugOutput = std::chrono::system_clock::now ().time_since_epoch ();
+			lastDebugOutput += std::chrono::milliseconds ((int) (secondsPerDebugOutput * 1000));
 			float avgFrameTime = totalFrameTime / frameCount;
 			float avgFrameTimeMs = avgFrameTime / 1000000;
 

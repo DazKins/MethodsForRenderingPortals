@@ -53,8 +53,8 @@ void Player::moveDown ()
 
 void Player::rotate (glm::vec2 rot)
 {
-	this->rotation.x -= rot.y * rotationSpeed;
-	this->rotation.y -= rot.x * rotationSpeed;
+	this->rotation.x -= rot.x * rotationSpeed;
+	this->rotation.y -= rot.y * rotationSpeed;
 }
 
 void Player::tick ()
@@ -66,7 +66,7 @@ void Player::tick ()
 
 	glm::vec2 dp = mousePosition - midPoint;
 
-	rotate (dp);
+	rotate (glm::vec2 (dp.y, dp.x));
 
 	if (this->input->isKeyDown (GLFW_KEY_W))
 		moveForward ();

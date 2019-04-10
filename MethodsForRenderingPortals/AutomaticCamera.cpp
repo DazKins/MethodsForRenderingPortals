@@ -1,17 +1,36 @@
 #include "AutomaticCamera.h"
+#include "Level.h"
 
 #include <iostream>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 AutomaticCamera::AutomaticCamera (Window* window, Camera* camera, Implementation* implementation)
 	: Player(0, window, camera, implementation)
 {
-	this->path = {
-		{"mf", 60},
-		{"mu", 5},
-		{"mf", 60},
-		{"md", 10},
-		{"mf", 240},
-	};
+
+	if (SCENE == 1 || SCENE == 2)
+	{
+		this->path = {
+			{"mf", 60},
+			{"mu", 5},
+			{"mf", 60},
+			{"md", 10},
+			{"mf", 240},
+		};
+	}
+	else
+	{
+		this->path = {
+			{"mf", 60},
+			{"mu", 5},
+			{"mf", 60},
+			{"md", 10},
+			{"mf", 60},
+			{"tl", 60},
+			{"mf", 180},
+		};
+	}
 }
 
 AutomaticCamera::~AutomaticCamera ()
@@ -43,6 +62,18 @@ void AutomaticCamera::processInstruction (std::string instruction)
 	else if (instruction == "md")
 	{
 		this->moveDown ();
+	}
+	else if (instruction == "md")
+	{
+		this->moveDown ();
+	}
+	else if (instruction == "tl")
+	{
+		this->rotate (glm::vec2 (0.0f, -5.0f));
+	}
+	else if (instruction == "tr")
+	{
+		this->rotate (glm::vec2 (0.0f, 5.0f));
 	}
 }
 
