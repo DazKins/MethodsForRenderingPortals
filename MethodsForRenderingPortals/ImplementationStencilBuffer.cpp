@@ -40,17 +40,18 @@ void ImplementationStencilBuffer::renderPortalView (glm::mat4 viewMatrix, Portal
 		glm::mat4 thisViewMatrix;
 
 		if (i == 0)
+		{
 			thisViewMatrix = viewMatrix;
+			Shader::DEFAULT.bind ();
+		}
 		else
+		{
 			thisViewMatrix = viewMatrix * viewOperators[i];
+			Shader::PORTAL_CLIP.bind ();
+		}
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilFunc (GL_EQUAL, i, 0xFF);
-
-		Shader::PORTAL_CLIP.bind ();
-
-		if (i == 0)
-			Shader::DEFAULT.bind ();
 
 		Shader::setUniform ("viewMatrix", thisViewMatrix);
 

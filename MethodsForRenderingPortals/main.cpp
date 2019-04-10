@@ -14,6 +14,8 @@
 #include "Shader.h"
 #include "Level.h"
 
+#include <string>
+
 const int INITIAL_WINDOW_WIDTH = 1280;
 const int INITIAL_WINDOW_HEIGHT = 720;
 
@@ -44,6 +46,8 @@ void render ()
 	window->update ();
 }
 
+std::string fileEnding = "";
+
 void init ()
 {
 	std::string option;
@@ -52,6 +56,7 @@ void init ()
 	{
 		std::cout << "Choose scene: " << std::endl;
 		std::cin >> SCENE;
+		fileEnding += SCENE + ",";
 	} while (SCENE > 3 || SCENE == 0);
 
 	do
@@ -59,6 +64,7 @@ void init ()
 		std::cout << "Choose Camera: " << std::endl << "m : manual" << std::endl << "a : automatic" << std::endl;
 		std::cin >> option;
 		std::transform (option.begin (), option.end (), option.begin (), ::tolower);
+		fileEnding += option + ",";
 	} while (option[0] != 'a' && option[0] != 'm');
 
 	bool manualCamera = false;
@@ -72,17 +78,20 @@ void init ()
 		std::cout << "Choose Implementation:" << std::endl << "s : stencil buffers" << std::endl << "f : framebuffer objects" << std::endl << "m : mixed" << std::endl;  
 		std::cin >> option;
 		std::transform (option.begin (), option.end (), option.begin (), ::tolower);
+		fileEnding += option + ",";
 	} while (option[0] != 'f' && option[0] != 's' && option[0] != 'm');
 
 	int recursionDepth = 0;
 	std::cout << "Enter max recursion depth:" << std::endl;
 	std::cin >> recursionDepth;
+	fileEnding += std::to_string (recursionDepth) + ",";
 
 	int cutoff = 0;
 	if (option[0] == 'm')
 	{
 		std::cout << "Enter cutoff:" << std::endl;
 		std::cin >> cutoff;
+		fileEnding += std::to_string (cutoff) + ",";
 	}
 
 	int textureSize = 0;
@@ -90,6 +99,7 @@ void init ()
 	{
 		std::cout << "Enter texture size:" << std::endl;
 		std::cin >> textureSize;
+		fileEnding += std::to_string (textureSize) + ",";
 	}
 
 	glfwInit ();
@@ -127,7 +137,7 @@ void mainLoop ()
 	int frameCount = 0;
 
 	std::ofstream frameTimingFile;
-	frameTimingFile.open ("frame_timings.csv", std::ofstream::out | std::ofstream::trunc);
+	frameTimingFile.open ("frame_timings_" + fileEnding + ".csv", std::ofstream::out | std::ofstream::trunc);
 
 	while (running)
 	{

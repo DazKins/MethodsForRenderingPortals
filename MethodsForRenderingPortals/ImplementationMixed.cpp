@@ -5,8 +5,6 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <iostream>
 
-glm::mat4 defaultProjection;
-
 ImplementationMixed::ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff, bool manualCamera)
 	: Implementation(input, window, maxRecursionDepth, manualCamera)
 {

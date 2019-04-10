@@ -72,15 +72,9 @@ Shader::Shader (std::string shaderPath)
 	glAttachShader (shaderProgramId, fragmentShaderId);
 	glLinkProgram (shaderProgramId);
 
-	glUseProgram (shaderProgramId);
-
 	glDeleteShader (vertexShaderId);
 	glDeleteShader (fragmentShaderId);
 }
-
-glm::mat4 Shader::currentViewMatrix;
-glm::mat4 Shader::currentModelMatrix;
-glm::mat4 Shader::currentProjectionMatrix;
 
 std::vector<Shader> Shader::ALL_SHADERS;
 
@@ -136,21 +130,6 @@ void Shader::setUniform (const char* uniform, bool boolean)
 {
 	int uniformLocation = glGetUniformLocation (Shader::currentlyBound, uniform);
 	glUniform1i (uniformLocation, boolean);
-}
-
-glm::mat4 Shader::getCurrentModelMatrix ()
-{
-	return Shader::currentModelMatrix;
-}
-
-glm::mat4 Shader::getCurrentViewMatrix ()
-{
-	return Shader::currentViewMatrix;
-}
-
-glm::mat4 Shader::getCurrentProjectionMatrix ()
-{
-	return Shader::currentProjectionMatrix;
 }
 
 unsigned int Shader::currentlyBound = -1;

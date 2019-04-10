@@ -9,10 +9,6 @@ class Shader
 private:
 	unsigned int shaderProgramId;
 
-	static glm::mat4 currentModelMatrix;
-	static glm::mat4 currentViewMatrix;
-	static glm::mat4 currentProjectionMatrix;
-
 public:
 	Shader ();
 	Shader (std::string shaderPath);
@@ -32,10 +28,6 @@ public:
 	static Shader PORTAL_STENCIL_BUFFER;
 	static Shader PORTAL_FRAMEBUFFER_OBJECT;
 	static void initShaders ();
-
-	static glm::mat4 getCurrentModelMatrix ();
-	static glm::mat4 getCurrentViewMatrix ();
-	static glm::mat4 getCurrentProjectionMatrix ();
 
 	static unsigned int currentlyBound;
 };

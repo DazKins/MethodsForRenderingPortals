@@ -75,6 +75,8 @@ void Level::render ()
 	this->floorTexture->bind ();
 	this->floorVAO->render ();
 
+	Shader::setUniform ("noTexture", true);
+
 	if (SCENE == 1)
 	{
 		Shader::setUniform ("modelMatrix", glm::translate (glm::mat4 (1.0f), glm::vec3 (-sin (t), 0.0f, 0.0f))
@@ -104,6 +106,8 @@ void Level::render ()
 				}
 		
 	}
+
+	Shader::setUniform ("noTexture", false);
 
 	Shader::setUniform ("modelMatrix", glm::mat4(1.0f));
 }
