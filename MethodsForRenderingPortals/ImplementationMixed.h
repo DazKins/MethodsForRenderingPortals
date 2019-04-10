@@ -16,8 +16,8 @@ private:
 	unsigned int cutoff;
 	unsigned int textureSize;
 
-	static void renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, unsigned int* inPortalTextures,
-		unsigned int* inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, glm::mat4* viewOperators);
+	static void renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, unsigned int* portalTextures,
+		unsigned int* portalFramebuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, glm::mat4* viewOperators);
 
 	unsigned int* portalFrameBuffers;
 	unsigned int* portalTextures;

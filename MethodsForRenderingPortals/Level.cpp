@@ -75,20 +75,16 @@ void Level::render ()
 	this->floorTexture->bind ();
 	this->floorVAO->render ();
 
-	Shader::DEFAULT->setUniform ("noTexture", true);
-
 	if (SCENE == 1)
 	{
-		Shader::updateAllModelMatrices (glm::translate (glm::mat4 (1.0f), glm::vec3 (-sin (t), 0.0f, 0.0f))
+		Shader::setUniform ("modelMatrix", glm::translate (glm::mat4 (1.0f), glm::vec3 (-sin (t), 0.0f, 0.0f))
 			* glm::rotate (glm::mat4 (1.0f), t + 3, glm::vec3 (1.0f, 0.0f, 1.0f))
 			* glm::scale (glm::mat4 (1.0f), glm::vec3 (0.4f, 0.4f, 0.4f)));
-		Shader::DEFAULT->bind ();
 		this->bunny->render ();
 
-		Shader::updateAllModelMatrices (glm::translate (glm::mat4 (1.0f), glm::vec3 (sin (t), 0.0f, 0.0f))
+		Shader::setUniform ("modelMatrix", glm::translate (glm::mat4 (1.0f), glm::vec3 (sin (t), 0.0f, 0.0f))
 			* glm::rotate (glm::mat4 (1.0f), 3 * t, glm::vec3 (0.0f, 0.0f, 1.0f))
 			* glm::scale (glm::mat4 (1.0f), glm::vec3 (0.2f, 0.2f, 0.2f)));
-		Shader::DEFAULT->bind ();
 		this->bunny->render ();
 	}
 	else
@@ -101,18 +97,15 @@ void Level::render ()
 			for (int y = 0; y < nBunniesY; y++)
 				for (int z = 0; z < nBunniesZ; z++)
 				{
-					Shader::updateAllModelMatrices (glm::translate (glm::mat4 (1.0f), glm::vec3 (x * 0.3 - nBunniesX * 0.15, y * 0.3 - nBunniesY * 0.15 + 0.5f, z * 0.3 - nBunniesZ * 0.15))
+					Shader::setUniform ("modelMatrix", glm::translate (glm::mat4 (1.0f), glm::vec3 (x * 0.3 - nBunniesX * 0.15, y * 0.3 - nBunniesY * 0.15 + 0.5f, z * 0.3 - nBunniesZ * 0.15))
 						* glm::scale (glm::mat4 (1.0f), glm::vec3 (0.2f, 0.2f, 0.2f))
 						* glm::rotate (glm::mat4 (1.0f), t + x * 546 + y * 592 + z * 510, glm::vec3 (0.9f, 0.2f, 1.0f)));
-					Shader::DEFAULT->bind ();
 					this->bunny->render ();
 				}
 		
 	}
 
-	Shader::DEFAULT->setUniform ("noTexture", false);
-
-	Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+	Shader::setUniform ("modelMatrix", glm::mat4(1.0f));
 }
 
 void Level::tick ()

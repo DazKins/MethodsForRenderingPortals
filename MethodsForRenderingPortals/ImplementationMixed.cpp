@@ -5,14 +5,16 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <iostream>
 
+glm::mat4 defaultProjection;
+
 ImplementationMixed::ImplementationMixed (Input* input, Window* window, int textureSize, int maxRecursionDepth, int cutoff, bool manualCamera)
 	: Implementation(input, window, maxRecursionDepth, manualCamera)
 {
 	this->cutoff = cutoff;
 	this->textureSize = textureSize;
 
-	this->portalFrameBuffers = (unsigned int*)malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
-	this->portalTextures = (unsigned int*)malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
+	this->portalFrameBuffers = (unsigned int*) malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
+	this->portalTextures = (unsigned int*) malloc (sizeof (unsigned int) * (maxRecursionDepth - cutoff));
 
 	for (int i = cutoff; i < maxRecursionDepth; i++)
 	{
@@ -28,54 +30,66 @@ ImplementationMixed::~ImplementationMixed ()
 	//	glDeleteFramebuffers (1, &i);
 }
 
-void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, unsigned int* inPortalTextures,
-	unsigned int* inPortalFrameBuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, glm::mat4* viewOperators)
+glm::mat4 ImplementationMixed::defaultProjection;
+
+void ImplementationMixed::renderFromPerspective (Camera* camera, Portal* inPortal, Portal* outPortal, unsigned int* portalTextures,
+	unsigned int* portalFramebuffers, Level* level, int textureSize, int maxRecursionDepth, int cutoff, Window* window, glm::mat4* viewOperators)
 {
 	glDisable (GL_STENCIL_TEST);
 
-	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, inPortalTextures,
-		inPortalFrameBuffers, level, textureSize, maxRecursionDepth, cutoff, viewOperators);
+	ImplementationFramebufferObjects::renderFromPortalPerspective (camera->getTranslationMatrix (), inPortal, outPortal, portalTextures,
+		portalFramebuffers, level, textureSize, maxRecursionDepth, cutoff, viewOperators);
 
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
-
-	Shader::updateAllProjectionMatrices (glm::perspective (45.0f, window->getAspectRatio (), 0.001f, 100.0f));
 	glViewport (0, 0, window->getWidth (), window->getHeight ());
 
-	Shader::PORTAL_CLIP->setUniform ("portalPosition", outPortal->getPosition ());
-	Shader::PORTAL_CLIP->setUniform ("portalNormal", outPortal->getNormal ());
+	Shader::PORTAL_FRAMEBUFFER_OBJECT.bind ();
+	Shader::setUniform ("projectionMatrix", defaultProjection);
+
+	Shader::PORTAL_CLIP.bind ();
+	Shader::setUniform ("projectionMatrix", defaultProjection);
+	Shader::setUniform ("portalPosition", outPortal->getPosition ());
+	Shader::setUniform ("portalNormal", outPortal->getNormal ());
 
 	glEnable (GL_STENCIL_TEST);
 
 	for (int i = 0; i <= cutoff; i++)
 	{
+		glm::mat4 thisViewMatrix;
+
 		if (i == 0)
-			Shader::updateAllViewMatrices (camera->getViewMatrix ());
+			thisViewMatrix = camera->getViewMatrix ();
 		else
-			Shader::updateAllViewMatrices (camera->getViewMatrix() * viewOperators[i]);
+			thisViewMatrix = camera->getViewMatrix () * viewOperators[i];
 
 		glStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilFunc (GL_EQUAL, i, 0xFF);
 
-		Shader::PORTAL_CLIP->bind ();
+		Shader::PORTAL_CLIP.bind ();
 
 		if (i == 0)
-			Shader::DEFAULT->bind ();
+			Shader::DEFAULT.bind ();
+
+		Shader::setUniform ("viewMatrix", thisViewMatrix);
 
 		level->render ();
 
-		Shader::updateAllModelMatrices (inPortal->getToWorld ());
 		if (i == cutoff)
 		{
-			glBindTexture (GL_TEXTURE_2D, inPortalTextures[0]);
-			Shader::PORTAL_FRAMEBUFFER_OBJECT->bind ();
+			glBindTexture (GL_TEXTURE_2D, portalTextures[1]);
+			Shader::PORTAL_FRAMEBUFFER_OBJECT.bind ();
 		}
 		else
 		{
 			glStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
-			Shader::PORTAL_STENCIL_BUFFER->bind ();
+			Shader::PORTAL_STENCIL_BUFFER.bind ();
 		}
+
+		Shader::setUniform ("viewMatrix", thisViewMatrix);
+		Shader::setUniform ("modelMatrix", inPortal->getToWorld ());
+
 		inPortal->model->render ();
-		Shader::updateAllModelMatrices (glm::mat4 (1.0f));
+
 		glClear (GL_DEPTH_BUFFER_BIT);
 	}
 

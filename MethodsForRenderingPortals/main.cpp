@@ -35,7 +35,8 @@ void render ()
 {
 	glm::vec4 clearColor = glm::vec4 (0.2f, 0.3f, 0.3f, 1.0f);
 	glClearColor (clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-	Shader::PORTAL_STENCIL_BUFFER->setUniform ("clearColor", clearColor);
+	Shader::PORTAL_STENCIL_BUFFER.bind ();
+	Shader::setUniform ("clearColor", clearColor);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	implementation->render ();

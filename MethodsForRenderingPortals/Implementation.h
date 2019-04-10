@@ -61,4 +61,6 @@ protected:
 
 	glm::mat4 * portal1ViewOperators;
 	glm::mat4 * portal2ViewOperators;
+
+	static glm::mat4 defaultProjection;
 };

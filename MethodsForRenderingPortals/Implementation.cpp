@@ -25,7 +25,11 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 	this->level = new Level (5.0f, 1.0f, 5.0f);
 
 	glm::mat4 projectionMatrix = glm::perspective (45.0f, this->window->getAspectRatio (), 0.001f, 1000.0f);
-	Shader::updateAllProjectionMatrices (projectionMatrix);
+	for (Shader s : Shader::ALL_SHADERS)
+	{
+		s.bind ();
+		Shader::setUniform ("projectionMatrix", projectionMatrix);
+	}
 	float epsilon = 0.05f;
 
 	this->portal1 = new Portal ();
@@ -62,6 +66,8 @@ Implementation::Implementation (Input* input, Window* window, int maxRecursionDe
 		portal1ViewOperators[i] = portal1ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal1, portal2);
 		portal2ViewOperators[i] = portal2ViewOperators[i - 1] * getNewCameraView (glm::mat4 (1.0f), portal2, portal1);
 	}
+
+	defaultProjection = glm::perspective (45.0f, this->window->getAspectRatio (), 0.001f, 1000.0f);
 }
 
 const float Portal::PORTAL_SIZE = 0.5f;

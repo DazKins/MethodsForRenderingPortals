@@ -20,6 +20,11 @@ std::string loadMainFragmentShaderSource ()
 	return fragmentShaderSource;
 }
 
+Shader::Shader ()
+{
+
+}
+
 Shader::Shader (std::string shaderPath)
 {
 	std::string mainVertexShaderSource = loadMainVertexShaderSource ();
@@ -77,92 +82,59 @@ glm::mat4 Shader::currentViewMatrix;
 glm::mat4 Shader::currentModelMatrix;
 glm::mat4 Shader::currentProjectionMatrix;
 
-std::vector<Shader*> Shader::ALL_SHADERS;
+std::vector<Shader> Shader::ALL_SHADERS;
 
-Shader* Shader::DEFAULT;
-Shader* Shader::PORTAL_CLIP;
-Shader* Shader::PORTAL_STENCIL_BUFFER;
-Shader* Shader::PORTAL_FRAMEBUFFER_OBJECT;
+Shader Shader::DEFAULT;
+Shader Shader::PORTAL_CLIP;
+Shader Shader::PORTAL_STENCIL_BUFFER;
+Shader Shader::PORTAL_FRAMEBUFFER_OBJECT;
 
 void Shader::initShaders ()
 {
-	Shader::DEFAULT = new Shader ("shaders/default");
+	Shader::DEFAULT = Shader ("shaders/default");
 	ALL_SHADERS.push_back (Shader::DEFAULT);
 
-	Shader::PORTAL_CLIP = new Shader ("shaders/portal_clip");
+	Shader::PORTAL_CLIP = Shader ("shaders/portal_clip");
 	ALL_SHADERS.push_back (Shader::PORTAL_CLIP);
 
-	Shader::PORTAL_STENCIL_BUFFER = new Shader ("shaders/portal_stencil_buffer");
+	Shader::PORTAL_STENCIL_BUFFER = Shader ("shaders/portal_stencil_buffer");
 	ALL_SHADERS.push_back (Shader::PORTAL_STENCIL_BUFFER);
 
-	Shader::PORTAL_FRAMEBUFFER_OBJECT = new Shader ("shaders/portal_framebuffer_object");
+	Shader::PORTAL_FRAMEBUFFER_OBJECT = Shader ("shaders/portal_framebuffer_object");
 	ALL_SHADERS.push_back (Shader::PORTAL_FRAMEBUFFER_OBJECT);
 
 	glm::mat4 id = glm::mat4 (1.0f);
-	updateAllProjectionMatrices (id);
-	updateAllViewMatrices (id);
-	updateAllModelMatrices (id);
-}
 
-void Shader::updateAllProjectionMatrices (glm::mat4 matrix)
-{
-	for (Shader* s : Shader::ALL_SHADERS)
+	for (Shader s : ALL_SHADERS)
 	{
-		s->setUniform ("projectionMatrix", matrix);
+		s.bind ();
+		Shader::setUniform ("projectionMatrix", id);
+		Shader::setUniform ("viewMatrix", id);
+		Shader::setUniform ("modelMatrix", id);
 	}
-
-	Shader::currentProjectionMatrix = matrix;
-}
-
-void Shader::updateAllViewMatrices (glm::mat4 matrix)
-{
-	for (Shader* s : Shader::ALL_SHADERS)
-	{
-		s->setUniform ("viewMatrix", matrix);
-	}
-
-	Shader::currentViewMatrix = matrix;
-}
-
-void Shader::updateAllModelMatrices (glm::mat4 matrix)
-{
-	for (Shader* s : Shader::ALL_SHADERS)
-	{
-		s->setUniform ("modelMatrix", matrix);
-	}
-
-	Shader::currentModelMatrix = matrix;
 }
 
 void Shader::setUniform (const char* uniform, glm::mat4 matrix)
 {
-	this->bind ();
-
-	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	int uniformLocation = glGetUniformLocation (Shader::currentlyBound, uniform);
 	glUniformMatrix4fv (uniformLocation, 1, GL_FALSE, glm::value_ptr (matrix));
 }
 
 void Shader::setUniform (const char* uniform, glm::vec3 vector)
 {
-	this->bind ();
-
-	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	int uniformLocation = glGetUniformLocation (Shader::currentlyBound, uniform);
 	glUniform3fv (uniformLocation, 1, glm::value_ptr (vector));
 }
 
 void Shader::setUniform (const char* uniform, glm::vec4 vector)
 {
-	this->bind ();
-
-	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	int uniformLocation = glGetUniformLocation (Shader::currentlyBound, uniform);
 	glUniform4fv (uniformLocation, 1, glm::value_ptr (vector));
 }
 
 void Shader::setUniform (const char* uniform, bool boolean)
 {
-	this->bind ();
-
-	int uniformLocation = glGetUniformLocation (this->shaderProgramId, uniform);
+	int uniformLocation = glGetUniformLocation (Shader::currentlyBound, uniform);
 	glUniform1i (uniformLocation, boolean);
 }
 
@@ -181,9 +153,15 @@ glm::mat4 Shader::getCurrentProjectionMatrix ()
 	return Shader::currentProjectionMatrix;
 }
 
+unsigned int Shader::currentlyBound = -1;
+
 void Shader::bind ()
 {
-	glUseProgram (this->shaderProgramId);
+	if (currentlyBound != this->shaderProgramId)
+	{
+		glUseProgram (this->shaderProgramId);
+		Shader::currentlyBound = this->shaderProgramId;
+	}
 }
 
 Shader::~Shader ()
