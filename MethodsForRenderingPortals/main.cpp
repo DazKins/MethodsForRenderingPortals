@@ -10,6 +10,7 @@
 #include "Input.h"
 #include "ImplementationStencilBuffer.h"
 #include "ImplementationFramebufferObjects.h"
+#include "ImplementationFramebufferObjectsMemoryConservative.h"
 #include "ImplementationMixed.h"
 #include "Shader.h"
 #include "Level.h"
@@ -75,11 +76,15 @@ void init ()
 
 	do
 	{
-		std::cout << "Choose Implementation:" << std::endl << "s : stencil buffers" << std::endl << "f : framebuffer objects" << std::endl << "m : mixed" << std::endl;  
+		std::cout << "Choose Implementation:" << std::endl
+			<< "s : stencil buffers" << std::endl
+			<< "f : framebuffer objects" << std::endl
+			<< "c : memory conservative framebuffer objects" << std::endl
+			<< "m : mixed" << std::endl;  
 		std::cin >> option;
 		std::transform (option.begin (), option.end (), option.begin (), ::tolower);
 		fileEnding += option + ",";
-	} while (option[0] != 'f' && option[0] != 's' && option[0] != 'm');
+	} while (option[0] != 'f' && option[0] != 's' && option[0] != 'm' && option[0] != 'c');
 
 	int recursionDepth = 0;
 	std::cout << "Enter max recursion depth:" << std::endl;
@@ -95,7 +100,7 @@ void init ()
 	}
 
 	int textureSize = 0;
-	if (option[0] == 'f' || option[0] == 'm')
+	if (option[0] == 'f' || option[0] == 'm' || option[0] == 'c')
 	{
 		std::cout << "Enter texture size:" << std::endl;
 		std::cin >> textureSize;
@@ -116,6 +121,8 @@ void init ()
 
 	if (option[0] == 'f')
 		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjects (input, window, textureSize, recursionDepth, manualCamera));
+	else if (option[0] == 'c')
+		implementation = static_cast<Implementation*> (new ImplementationFramebufferObjectsMemoryConservative (input, window, textureSize, recursionDepth, manualCamera));
 	else if (option[0] == 's')
 		implementation = static_cast<Implementation*> (new ImplementationStencilBuffer (input, window, recursionDepth, manualCamera));
 	else if (option[0] == 'm')

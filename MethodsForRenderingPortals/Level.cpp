@@ -91,9 +91,9 @@ void Level::render ()
 	}
 	else
 	{
-		int nBunniesX = 2;
-		int nBunniesY = 2;
-		int nBunniesZ = 2;
+		int nBunniesX = 5;
+		int nBunniesY = 5;
+		int nBunniesZ = 5;
 
 		for (int x = 0; x < nBunniesX; x++)
 			for (int y = 0; y < nBunniesY; y++)

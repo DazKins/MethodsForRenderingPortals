@@ -75,6 +75,9 @@
     <ClCompile Include="AutomaticCamera.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="ImplementationFramebufferObjectsMemoryConservative.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -117,6 +120,9 @@
       <Filter>Header Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="AutomaticCamera.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplementationFramebufferObjectsMemoryConservative.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
